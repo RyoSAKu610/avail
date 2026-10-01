@@ -1,0 +1,587 @@
+<title>15分ドリル JS・Go・C++</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* Layout: ホーム = 学校の「時間割表」(10ラウンド × 3言語)。レッスン = 上部に固定した15分タイマー + 本文 + 右のコードパネル */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --sunken: #e8ecf2;
+  --ink: #1a2232;
+  --muted: #586276;
+  --line: #d4dae4;
+  --accent: #c8431b;        /* 朱。タイマーと主ボタンだけに使う */
+  --accent-ink: #ffffff;
+  --accent-soft: #fae2d8;
+  --ok: #1d7448;
+  --ok-soft: #d9efe2;
+  --js: #7d5f00;  --js-soft: #fbedb8;
+  --go: #00708a;  --go-soft: #d3eff6;
+  --cpp: #2d52a0; --cpp-soft: #dde6f7;
+  --code-bg: #f8f9fc;
+  --hl-comment: #687083;
+  --hl-keyword: #9b2f77;
+  --hl-string: #1d7448;
+  --hl-number: #a84c0c;
+  --hl-title: #2d52a0;
+  --hl-type: #00708a;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-mono: "JetBrains Mono", "BIZ UDGothic", ui-monospace, Menlo, Consolas, monospace;
+  --bar-h: 0px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141b; --surface: #171c26; --sunken: #0b0e14; --ink: #e4e8ef; --muted: #98a1b3; --line: #2a3241;
+    --accent: #ff7b4d; --accent-ink: #1c0c05; --accent-soft: #3b1e13;
+    --ok: #63d19b; --ok-soft: #12301f;
+    --js: #f0c94a; --js-soft: #322a0d; --go: #5cc7db; --go-soft: #0c2a32; --cpp: #8fb0f2; --cpp-soft: #17223b;
+    --code-bg: #0d1118;
+    --hl-comment: #7e8899; --hl-keyword: #e38bc5; --hl-string: #82d6a6; --hl-number: #f2a56d; --hl-title: #8fb0f2; --hl-type: #5cc7db;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171c26; --sunken: #0b0e14; --ink: #e4e8ef; --muted: #98a1b3; --line: #2a3241;
+  --accent: #ff7b4d; --accent-ink: #1c0c05; --accent-soft: #3b1e13;
+  --ok: #63d19b; --ok-soft: #12301f;
+  --js: #f0c94a; --js-soft: #322a0d; --go: #5cc7db; --go-soft: #0c2a32; --cpp: #8fb0f2; --cpp-soft: #17223b;
+  --code-bg: #0d1118;
+  --hl-comment: #7e8899; --hl-keyword: #e38bc5; --hl-string: #82d6a6; --hl-number: #f2a56d; --hl-title: #8fb0f2; --hl-type: #5cc7db;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code, pre { font-family: var(--font-mono); tab-size: 4; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; }
+@media (max-width: 480px) { .wrap { padding-inline: 16px; } }
+
+/* ---------- 共通パーツ ---------- */
+.lang { display: inline-flex; align-items: center; gap: .35em; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.lang-js { color: var(--js); background: var(--js-soft); }
+.lang-go { color: var(--go); background: var(--go-soft); }
+.lang-cpp { color: var(--cpp); background: var(--cpp-soft); }
+.btn { display: inline-flex; align-items: center; gap: .5em; border: 1px solid var(--line); background: var(--surface); padding: 8px 16px; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.4; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.small { padding: 4px 10px; font-size: 12.5px; font-weight: 400; }
+.eyebrow { font-size: 12.5px; letter-spacing: .08em; color: var(--muted); margin: 0; }
+
+/* ---------- ヘッダー ---------- */
+.masthead { border-bottom: 1px solid var(--line); background: var(--surface); }
+.masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-weight: 900; font-size: 18px; text-decoration: none; letter-spacing: .02em; }
+.brand small { font-family: var(--font-mono); font-weight: 600; font-size: 12px; color: var(--muted); margin-left: .5em; letter-spacing: 0; }
+.tally { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 10px; }
+.tally-bar { width: 120px; height: 6px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
+.tally-bar span { display: block; height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+
+/* ---------- ホーム ---------- */
+.intro { padding-block: 40px 28px; display: grid; gap: 14px; max-width: 760px; }
+.intro h1 { font-size: clamp(26px, 4.4vw, 40px); font-weight: 900; margin: 0; letter-spacing: .01em; }
+.nw { display: inline-block; }
+.intro .lede { margin: 0; color: var(--muted); max-width: 40em; }
+.cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.cta-row .note { font-size: 13px; color: var(--muted); }
+
+section.block { padding-block: 28px; border-top: 1px solid var(--line); }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.section-head h2 { margin: 0; font-size: 22px; }
+.section-head p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+/* 時間割表 */
+.tt { display: grid; grid-template-columns: 170px repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--line); gap: 1px; }
+.tt > * { background: var(--surface); }
+.tt-colhead { padding: 10px 14px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; background: var(--sunken); }
+.tt-colhead.corner { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.tt-round { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: var(--sunken); }
+.tt-round b { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+.tt-round span { font-family: var(--font-display); font-weight: 700; font-size: 14.5px; line-height: 1.45; }
+.tt-cell { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; min-width: 0; position: relative; }
+.tt-cell .day { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2px 6px; white-space: nowrap; font-family: var(--font-mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tt-cell .topic { font-size: 13.5px; line-height: 1.6; }
+.tt-cell .status { font-family: var(--font-body); font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 999px; white-space: nowrap; }
+.tt-cell.ready { cursor: pointer; }
+.tt-cell.ready:hover { background: var(--bg); }
+.tt-cell.ready .status { color: var(--accent); background: var(--accent-soft); }
+.tt-cell.done .status { color: var(--ok); background: var(--ok-soft); }
+.tt-cell.next { box-shadow: inset 0 0 0 2px var(--accent); }
+.tt-cell.locked .topic { color: var(--muted); }
+.tt-cell.locked .status { color: var(--muted); font-weight: 400; }
+.tt-cell .langtag { display: none; }
+@media (max-width: 760px) {
+  .tt { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tt-colhead { display: none; }
+  .tt-round { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 10px; padding: 8px 12px; }
+  .tt-cell { padding: 10px 10px 12px; }
+  .tt-cell .langtag { display: inline-flex; align-self: flex-start; }
+  .tt-cell .topic { font-size: 12.5px; }
+}
+
+/* 1日の流れ */
+.phases { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.phases li { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.phases .min { font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+.phases .name { font-weight: 700; }
+.phases .detail { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+@media (max-width: 640px) { .phases { flex-direction: column; } .phases li { flex: none !important; } }
+
+/* なぜこの3言語 */
+.why { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.why article { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.why h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.why dl { margin: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.why dt { font-size: 11.5px; color: var(--muted); letter-spacing: .06em; }
+.why dd { margin: 0; }
+@media (max-width: 860px) { .why { grid-template-columns: minmax(0, 1fr); } }
+
+.start pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 0; }
+.start p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.foot { padding-block: 28px 48px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); }
+
+/* ---------- レッスン: タイマー ---------- */
+.timerbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+.timerbar .wrap { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 10px 18px; padding-block: 10px; }
+.back { font-size: 13px; text-decoration: none; color: var(--muted); white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.clock { display: flex; align-items: baseline; gap: 10px; }
+.clock output { font-family: var(--font-mono); font-weight: 600; font-size: 28px; font-variant-numeric: tabular-nums; letter-spacing: .02em; line-height: 1; color: var(--accent); }
+.clock .phase-name { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.track { display: flex; gap: 4px; min-width: 0; }
+.seg { flex: var(--w) 1 0; min-width: 0; border: 0; background: none; padding: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.seg .bar { height: 8px; border-radius: 4px; background: var(--sunken); overflow: hidden; }
+.seg .bar span { display: block; height: 100%; width: 0; background: var(--accent); }
+.seg .lbl { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.seg.current .lbl { color: var(--ink); font-weight: 700; }
+.seg.passed .bar span { background: var(--ok); }
+.controls { display: flex; gap: 6px; }
+.controls .btn { padding: 6px 12px; font-size: 13px; }
+@media (max-width: 760px) {
+  .timerbar .wrap { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .track { grid-column: 1 / -1; grid-row: 2; }
+  .back { grid-column: 1; grid-row: 1; }
+  .clock { grid-column: 2; grid-row: 1; justify-content: center; }
+  .clock output { font-size: 22px; }
+  .clock .phase-name { display: none; }
+  .controls { grid-column: 3; grid-row: 1; }
+}
+.finished .clock output { color: var(--ok); }
+
+/* ---------- レッスン: 本文とコードパネル ---------- */
+.lesson-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr); gap: 32px; align-items: start; padding-block: 28px 24px; }
+@media (max-width: 1080px) { .lesson-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.prose { min-width: 0; max-width: 46em; }
+.prose h1 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 900; margin: 0 0 8px; }
+.prose h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); scroll-margin-top: calc(var(--bar-h) + 16px); }
+.prose h2[id^="phase-"]::before { content: attr(data-min); display: block; font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); letter-spacing: .04em; font-weight: 600; }
+.prose p, .prose ul, .prose ol { margin: 0 0 12px; }
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose li { margin-bottom: 4px; }
+.prose blockquote { margin: 0 0 14px; padding: 10px 14px; background: var(--sunken); border-radius: 8px; font-size: 14px; }
+.prose blockquote p:last-child, .prose blockquote pre:last-child { margin-bottom: 0; }
+.prose :not(pre) > code { font-size: .88em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.prose strong { font-weight: 700; }
+.prose a.file-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-family: var(--font-mono); font-size: .92em; }
+.table-wrap { overflow-x: auto; margin: 0 0 14px; border: 1px solid var(--line); border-radius: 8px; }
+.prose table { border-collapse: collapse; width: 100%; font-size: 13.5px; line-height: 1.6; }
+.prose th, .prose td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: var(--sunken); font-weight: 700; white-space: nowrap; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose td code { white-space: nowrap; }
+pre.code { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.65; margin: 0 0 14px; }
+.prose details { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 14px; margin: -4px 0 18px; background: var(--surface); }
+.prose details[open] { border-style: solid; }
+.prose summary { cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--accent); }
+.prose details > :last-child { margin-bottom: 4px; }
+.prose details p:first-of-type { margin-top: 8px; }
+
+.codepanel { position: sticky; top: calc(var(--bar-h) + 16px); min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; max-height: calc(100vh - var(--bar-h) - 32px); overflow: hidden; scroll-margin-top: calc(var(--bar-h) + 12px); }
+@media (max-width: 1080px) { .codepanel { position: static; max-height: none; } }
+.tabs { display: flex; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; background: var(--sunken); }
+.tab { border: 0; background: none; padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px 6px 0 0; white-space: nowrap; color: var(--muted); display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+.tab small { font-family: var(--font-mono); font-size: 11px; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 1px 0 var(--surface); }
+.runline { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.runline .lbl { color: var(--muted); white-space: nowrap; }
+.runline code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 12px; padding: 2px 0; }
+.codeview { overflow: auto; flex: 1; min-height: 0; }
+.codeview pre.code { border: 0; border-radius: 0; margin: 0; min-height: 100%; font-size: 12.8px; }
+.gate { padding: 28px 22px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.gate p { margin: 0; font-size: 14px; }
+.gate code { background: var(--sunken); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+.lesson-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 8px 48px; }
+.lesson-foot nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.done-btn[aria-pressed="true"] { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+
+/* highlight.js のトークン色 (テーマ変数を使う) */
+.hljs-comment, .hljs-quote { color: var(--hl-comment); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in.hljs-keyword { color: var(--hl-keyword); }
+.hljs-string, .hljs-template-variable, .hljs-subst .hljs-string, .hljs-regexp { color: var(--hl-string); }
+.hljs-number, .hljs-literal { color: var(--hl-number); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--hl-title); }
+.hljs-type, .hljs-built_in, .hljs-class .hljs-title { color: var(--hl-type); }
+.hljs-meta, .hljs-meta .hljs-keyword { color: var(--hl-number); }
+.hljs-meta .hljs-string { color: var(--hl-string); }
+.hljs-variable.language_, .hljs-subst { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+<!-- body -->
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="#plan">15分ドリル<small>JS · Go · C++</small></a>
+    <div class="tally" aria-live="polite"><span id="tally-text">完了 0 / 30 日</span><div class="tally-bar" aria-hidden="true"><span id="tally-bar"></span></div></div>
+  </div>
+</header>
+
+<main id="view-home">
+  <div class="wrap">
+    <section class="intro">
+      <p class="eyebrow">Python・Rust 経験者向け ／ 1日15分 × 30日</p>
+      <h1><span class="nw">日本企業で使われる</span><span class="nw">3言語を、</span><span class="nw">毎日15分ずつ。</span></h1>
+      <p class="lede">JavaScript → Go → C++ の順に、1日1言語ずつ回ります。同じテーマを3日続けて3つの言語で書くので、言語ごとの考え方の違いがはっきり見えます。各回は Python・Rust との比較から始まります。</p>
+      <div class="cta-row"><a class="btn primary" id="cta" href="#day1">Day 1 から始める</a><span class="note" id="cta-note"></span></div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>30日の時間割</h2><p>行がラウンド（テーマ）、列が言語です。</p></div>
+      <div class="tt" id="timetable"></div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>1日15分の流れ</h2><p>レッスン画面のタイマーがこの順に区切りを知らせます。</p></div>
+      <ol class="phases" id="phases"></ol>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>なぜこの3言語？</h2><p>日本の求人でよく見かける組み合わせから選んでいます。</p></div>
+      <div class="why">
+        <article>
+          <h3><span class="lang lang-js">JS</span>JavaScript</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>Web 系企業や SIer のフロントエンド、社内システムの画面</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>TypeScript、React、Vue.js、Node.js</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3><span class="lang lang-go">Go</span>Go</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>Web 系企業のバックエンド、インフラ・SRE</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>Docker、Kubernetes、gRPC、AWS・Google Cloud</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3><span class="lang lang-cpp">C++</span>C++</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>自動車・家電の組込み、ゲーム開発、金融、画像処理</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>C 言語、Unreal Engine、Linux、MISRA などのコーディング規約</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="block start">
+      <div class="section-head"><h2>始め方</h2><p>詳しくはリポジトリの SETUP.md を見てください。</p></div>
+      <p>Node.js・Go・g++ を入れたら、リポジトリのフォルダで次を実行します。</p>
+<pre><code>node --version && go version && g++ --version   # 3つとも表示されれば準備OK
+node check.mjs                                  # 進み具合の一覧
+node check.mjs 1                                # Day 1 の演習を答え合わせ</code></pre>
+    </section>
+  </div>
+  <div class="wrap foot">進み具合はこのブラウザにだけ保存されます。答え合わせはリポジトリの <code>node check.mjs</code> で行います。</div>
+</main>
+
+<main id="view-lesson" hidden>
+  <div class="timerbar" id="timerbar">
+    <div class="wrap">
+      <a class="back" href="#plan">← 時間割</a>
+      <div class="clock"><output id="clock" aria-live="off">15:00</output><span class="phase-name" id="phase-name">比較</span></div>
+      <div class="track" id="track"></div>
+      <div class="controls">
+        <button class="btn primary" id="timer-toggle" type="button">スタート</button>
+        <button class="btn" id="timer-reset" type="button">リセット</button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="lesson-grid">
+      <article class="prose" id="lesson-body"></article>
+      <aside class="codepanel" id="codepanel" aria-label="コード">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="runline"><span class="lbl">実行</span><code id="run-cmd"></code><button class="btn small" id="copy-run" type="button">コピー</button></div>
+        <div class="codeview" id="codeview"></div>
+      </aside>
+    </div>
+    <div class="lesson-foot">
+      <button class="btn done-btn" id="done-btn" type="button" aria-pressed="false">この日を完了にする</button>
+      <nav id="lesson-nav"></nav>
+    </div>
+  </div>
+</main>
+
+<script type="application/json" id="drill-data">__DRILL_DATA__</script>
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById("drill-data").textContent);
+  const $ = (id) => document.getElementById(id);
+  const allDays = data.rounds.flatMap((r) => r.days);
+  const readyDays = allDays.filter((d) => d.ready).map((d) => d.day);
+  const shortLang = { js: "JS", go: "Go", cpp: "C++" };
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // ---------- 進み具合 (このブラウザの localStorage にだけ保存) ----------
+  const STORE_KEY = "drill15:done";
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]")); } catch (e) { /* 保存できない環境では無視 */ }
+  const saveDone = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify([...done])); } catch (e) { /* 無視 */ } };
+  const nextDay = () => readyDays.find((d) => !done.has(d));
+
+  function renderTally() {
+    $("tally-text").textContent = `完了 ${done.size} / ${allDays.length} 日`;
+    $("tally-bar").style.width = `${(done.size / allDays.length) * 100}%`;
+  }
+
+  // ---------- ホーム ----------
+  function renderHome() {
+    const tt = $("timetable");
+    const head = ['<div class="tt-colhead corner">ラウンド</div>'];
+    for (const lang of ["js", "go", "cpp"]) head.push(`<div class="tt-colhead"><span class="lang lang-${lang}">${shortLang[lang]}</span>${data.langNames[lang]}</div>`);
+    const upNext = nextDay();
+    const rows = data.rounds.map((round, i) => {
+      const cells = round.days.map((d) => {
+        const isDone = done.has(d.day);
+        const cls = ["tt-cell", d.ready ? "ready" : "locked", isDone ? "done" : "", d.day === upNext ? "next" : ""].join(" ");
+        const status = isDone ? "完了" : d.day === upNext ? "次はここ" : d.ready ? "公開中" : "準備中";
+        const inner = `<span class="day">Day ${d.day}<span class="status">${status}</span></span><span class="lang lang-${d.lang} langtag">${shortLang[d.lang]}</span><span class="topic">${esc(d.topic)}</span>`;
+        return d.ready ? `<a class="${cls}" href="#day${d.day}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+      });
+      return `<div class="tt-round"><b>ROUND ${String(i + 1).padStart(2, "0")}</b><span>${esc(round.theme)}</span></div>${cells.join("")}`;
+    });
+    tt.innerHTML = head.join("") + rows.join("");
+
+    $("phases").innerHTML = data.phases.map((p, i) => {
+      const from = data.phases.slice(0, i).reduce((s, x) => s + x.minutes, 0);
+      return `<li style="flex:${p.minutes} 1 0"><span class="min">${from}〜${from + p.minutes}分</span><span class="name">${esc(p.name)}</span><span class="detail">${esc(p.detail)}</span></li>`;
+    }).join("");
+
+    const cta = $("cta");
+    if (upNext) {
+      cta.href = `#day${upNext}`;
+      cta.textContent = done.size ? `続き: Day ${upNext} へ` : `Day ${upNext} から始める`;
+    } else {
+      cta.href = `#day${readyDays[readyDays.length - 1]}`;
+      cta.textContent = "公開分はすべて完了";
+    }
+    $("cta-note").textContent = `デモ版: Day ${readyDays[0]}〜${readyDays[readyDays.length - 1]} を公開中`;
+  }
+
+  // ---------- タイマー ----------
+  const TOTAL = data.minutesPerDay * 60;
+  const bounds = [];
+  data.phases.reduce((s, p) => { bounds.push([s * 60, (s + p.minutes) * 60]); return s + p.minutes; }, 0);
+  const timer = { base: 0, startedAt: 0, running: false, handle: 0, lastPhase: 0, finished: false };
+  let audio = null;
+  let wakeLock = null;
+
+  $("track").innerHTML = data.phases.map((p, i) =>
+    `<button class="seg" type="button" style="--w:${p.minutes}" data-phase="${i + 1}" title="${esc(p.detail)}"><span class="bar"><span></span></span><span class="lbl">${esc(p.name)} ${p.minutes}分</span></button>`
+  ).join("");
+
+  const elapsed = () => Math.min(TOTAL, timer.base + (timer.running ? (Date.now() - timer.startedAt) / 1000 : 0));
+  const phaseAt = (t) => Math.max(0, bounds.findIndex(([a, b]) => t >= a && t < b));
+
+  function chime(times) {
+    if (!audio) return;
+    const now = audio.currentTime;
+    for (let i = 0; i < times; i++) {
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now + i * 0.28);
+      gain.gain.exponentialRampToValueAtTime(0.2, now + i * 0.28 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.28 + 0.24);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(now + i * 0.28);
+      osc.stop(now + i * 0.28 + 0.26);
+    }
+  }
+
+  function paintTimer() {
+    const t = elapsed();
+    const left = Math.max(0, Math.ceil(TOTAL - t));
+    $("clock").textContent = `${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`;
+    const current = t >= TOTAL ? data.phases.length : phaseAt(t);
+    document.querySelectorAll(".seg").forEach((seg, i) => {
+      const [a, b] = bounds[i];
+      seg.querySelector(".bar span").style.width = `${Math.min(100, Math.max(0, ((t - a) / (b - a)) * 100))}%`;
+      seg.classList.toggle("current", i === current);
+      seg.classList.toggle("passed", t >= b);
+    });
+    $("phase-name").textContent = t >= TOTAL ? "おつかれさまでした" : `${data.phases[current].name}の時間`;
+    if (timer.running && current !== timer.lastPhase) {
+      chime(current >= data.phases.length ? 3 : 1);
+      timer.lastPhase = current;
+    }
+    if (t >= TOTAL && !timer.finished) {
+      timer.finished = true;
+      stopTimer();
+      $("timerbar").classList.add("finished");
+      $("timer-toggle").textContent = "もう一度";
+    }
+  }
+
+  function startTimer() {
+    if (timer.finished) resetTimer();
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { audio = null; }
+    try { navigator.wakeLock?.request("screen").then((l) => { wakeLock = l; }).catch(() => {}); } catch (e) { /* 使えない環境では無視 */ }
+    timer.startedAt = Date.now();
+    timer.running = true;
+    timer.handle = setInterval(paintTimer, 250);
+    $("timer-toggle").textContent = "一時停止";
+  }
+  function stopTimer() {
+    if (timer.running) timer.base = elapsed();
+    timer.running = false;
+    clearInterval(timer.handle);
+    try { wakeLock?.release(); } catch (e) { /* 無視 */ }
+    wakeLock = null;
+    $("timer-toggle").textContent = timer.base > 0 && !timer.finished ? "再開" : "スタート";
+  }
+  function resetTimer() {
+    stopTimer();
+    Object.assign(timer, { base: 0, lastPhase: 0, finished: false });
+    $("timerbar").classList.remove("finished");
+    $("timer-toggle").textContent = "スタート";
+    paintTimer();
+  }
+  $("timer-toggle").addEventListener("click", () => (timer.running ? stopTimer() : startTimer()));
+  $("timer-reset").addEventListener("click", resetTimer);
+  $("track").addEventListener("click", (e) => {
+    const seg = e.target.closest(".seg");
+    if (!seg) return;
+    document.getElementById(`phase-${seg.dataset.phase}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // ---------- レッスン ----------
+  let current = null;
+  const revealed = new Set();
+
+  function copyText(text, button) {
+    const ok = () => { const t = button.textContent; button.textContent = "コピーしました"; setTimeout(() => { button.textContent = t; }, 1400); };
+    const fallback = () => {
+      const range = document.createRange();
+      range.selectNodeContents(button.previousElementSibling || button);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      button.textContent = "選択しました。コピーしてください";
+    };
+    try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+  }
+
+  function showFile(id) {
+    const file = current.files.find((f) => f.id === id) || current.files[0];
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.id === file.id)));
+    $("run-cmd").textContent = file.run;
+    const view = $("codeview");
+    if (file.id === "solution" && !revealed.has(current.day)) {
+      view.innerHTML = `<div class="gate"><p>まずは自分で演習を解いてみましょう。</p><p>答え合わせ: <code>node check.mjs ${current.day}</code></p><button class="btn" type="button" id="reveal">解答例を表示する</button></div>`;
+      $("reveal").addEventListener("click", () => { revealed.add(current.day); showFile("solution"); });
+    } else {
+      view.innerHTML = `<pre class="code"><code class="hljs">${file.html}</code></pre>`;
+    }
+    view.scrollTop = 0;
+  }
+
+  function renderLesson(day) {
+    current = data.lessons[day];
+    const body = $("lesson-body");
+    body.innerHTML = current.html;
+    // 「## 1. 〇〇」見出しに、タイマー上の時間帯を添える
+    bounds.forEach(([a, b], i) => {
+      const h = document.getElementById(`phase-${i + 1}`);
+      if (h) h.dataset.min = `${a / 60}〜${b / 60}分 ・ ${data.phases[i].name}`;
+    });
+
+    $("tabs").innerHTML = current.files.map((f) =>
+      `<button class="tab" role="tab" type="button" data-id="${f.id}" aria-selected="false">${esc(f.label)}<small>${esc(f.path)}</small></button>`
+    ).join("");
+    showFile("sample");
+
+    const doneBtn = $("done-btn");
+    const paintDone = () => {
+      const isDone = done.has(day);
+      doneBtn.setAttribute("aria-pressed", String(isDone));
+      doneBtn.textContent = isDone ? `Day ${day} 完了済み（取り消す）` : "この日を完了にする";
+    };
+    paintDone();
+    doneBtn.onclick = () => {
+      done.has(day) ? done.delete(day) : done.add(day);
+      saveDone(); paintDone(); renderTally();
+    };
+
+    const idx = readyDays.indexOf(day);
+    const prev = readyDays[idx - 1];
+    const next = readyDays[idx + 1];
+    const meta = (d) => allDays.find((x) => x.day === d);
+    $("lesson-nav").innerHTML = [
+      prev ? `<a class="btn" href="#day${prev}">← Day ${prev}（${data.langNames[meta(prev).lang]}）</a>` : "",
+      next ? `<a class="btn" href="#day${next}">Day ${next}（${data.langNames[meta(next).lang]}）→</a>` : `<a class="btn" href="#plan">時間割に戻る</a>`,
+    ].join("");
+    resetTimer();
+  }
+
+  $("tabs").addEventListener("click", (e) => { const t = e.target.closest(".tab"); if (t) showFile(t.dataset.id); });
+  $("copy-run").addEventListener("click", (e) => copyText($("run-cmd").textContent, e.currentTarget));
+  $("lesson-body").addEventListener("click", (e) => {
+    const link = e.target.closest("a.file-link");
+    if (!link) return;
+    e.preventDefault();
+    const file = current.files.find((f) => f.path === link.dataset.file);
+    if (!file) return;
+    showFile(file.id);
+    if (getComputedStyle($("codepanel")).position !== "sticky") $("codepanel").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // タイマーバーの高さを、見出しのスクロール位置とコードパネルの固定位置に反映する
+  const syncBar = () => document.documentElement.style.setProperty("--bar-h", `${$("timerbar").offsetHeight}px`);
+  try { new ResizeObserver(syncBar).observe($("timerbar")); } catch (e) { addEventListener("resize", syncBar); }
+
+  // ---------- 画面の切り替え (#day1 のようなアンカー) ----------
+  function route() {
+    const m = location.hash.match(/^#day(\d+)$/);
+    const day = m && Number(m[1]);
+    if (day && data.lessons[day]) {
+      $("view-home").hidden = true;
+      $("view-lesson").hidden = false;
+      if (!current || current.day !== day) renderLesson(day);
+      syncBar();
+    } else {
+      if (!$("view-lesson").hidden) stopTimer();
+      $("view-lesson").hidden = true;
+      $("view-home").hidden = false;
+      renderHome();
+    }
+    window.scrollTo(0, 0);
+  }
+  addEventListener("hashchange", route);
+  renderTally();
+  route();
+})();
+</script>

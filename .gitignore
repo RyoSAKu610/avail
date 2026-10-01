@@ -1,8 +1,8 @@
-target
-.gdb_history
+# C++ をコンパイルしてできる実行ファイル
+*.out
+*.exe
+a.out
+
+node_modules/
 .DS_Store
-node_modules
-dist
-tests/rust_scripts/target
-.vscode
-output
+.vscode/

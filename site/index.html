@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>15分ドリル JS・Go・C++</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* Layout: ホーム = 学校の「時間割表」(10ラウンド × 3言語)。レッスン = 上部に固定した15分タイマー + 本文 + 右のコードパネル */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --sunken: #e8ecf2;
+  --ink: #1a2232;
+  --muted: #586276;
+  --line: #d4dae4;
+  --accent: #c8431b;        /* 朱。タイマーと主ボタンだけに使う */
+  --accent-ink: #ffffff;
+  --accent-soft: #fae2d8;
+  --ok: #1d7448;
+  --ok-soft: #d9efe2;
+  --js: #7d5f00;  --js-soft: #fbedb8;
+  --go: #00708a;  --go-soft: #d3eff6;
+  --cpp: #2d52a0; --cpp-soft: #dde6f7;
+  --code-bg: #f8f9fc;
+  --hl-comment: #687083;
+  --hl-keyword: #9b2f77;
+  --hl-string: #1d7448;
+  --hl-number: #a84c0c;
+  --hl-title: #2d52a0;
+  --hl-type: #00708a;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-mono: "JetBrains Mono", "BIZ UDGothic", ui-monospace, Menlo, Consolas, monospace;
+  --bar-h: 0px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141b; --surface: #171c26; --sunken: #0b0e14; --ink: #e4e8ef; --muted: #98a1b3; --line: #2a3241;
+    --accent: #ff7b4d; --accent-ink: #1c0c05; --accent-soft: #3b1e13;
+    --ok: #63d19b; --ok-soft: #12301f;
+    --js: #f0c94a; --js-soft: #322a0d; --go: #5cc7db; --go-soft: #0c2a32; --cpp: #8fb0f2; --cpp-soft: #17223b;
+    --code-bg: #0d1118;
+    --hl-comment: #7e8899; --hl-keyword: #e38bc5; --hl-string: #82d6a6; --hl-number: #f2a56d; --hl-title: #8fb0f2; --hl-type: #5cc7db;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171c26; --sunken: #0b0e14; --ink: #e4e8ef; --muted: #98a1b3; --line: #2a3241;
+  --accent: #ff7b4d; --accent-ink: #1c0c05; --accent-soft: #3b1e13;
+  --ok: #63d19b; --ok-soft: #12301f;
+  --js: #f0c94a; --js-soft: #322a0d; --go: #5cc7db; --go-soft: #0c2a32; --cpp: #8fb0f2; --cpp-soft: #17223b;
+  --code-bg: #0d1118;
+  --hl-comment: #7e8899; --hl-keyword: #e38bc5; --hl-string: #82d6a6; --hl-number: #f2a56d; --hl-title: #8fb0f2; --hl-type: #5cc7db;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+code, pre { font-family: var(--font-mono); tab-size: 4; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; }
+@media (max-width: 480px) { .wrap { padding-inline: 16px; } }
+
+/* ---------- 共通パーツ ---------- */
+.lang { display: inline-flex; align-items: center; gap: .35em; font-family: var(--font-mono); font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.lang-js { color: var(--js); background: var(--js-soft); }
+.lang-go { color: var(--go); background: var(--go-soft); }
+.lang-cpp { color: var(--cpp); background: var(--cpp-soft); }
+.btn { display: inline-flex; align-items: center; gap: .5em; border: 1px solid var(--line); background: var(--surface); padding: 8px 16px; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.4; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.small { padding: 4px 10px; font-size: 12.5px; font-weight: 400; }
+.eyebrow { font-size: 12.5px; letter-spacing: .08em; color: var(--muted); margin: 0; }
+
+/* ---------- ヘッダー ---------- */
+.masthead { border-bottom: 1px solid var(--line); background: var(--surface); }
+.masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-weight: 900; font-size: 18px; text-decoration: none; letter-spacing: .02em; }
+.brand small { font-family: var(--font-mono); font-weight: 600; font-size: 12px; color: var(--muted); margin-left: .5em; letter-spacing: 0; }
+.tally { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 10px; }
+.tally-bar { width: 120px; height: 6px; background: var(--sunken); border-radius: 3px; overflow: hidden; }
+.tally-bar span { display: block; height: 100%; background: var(--ok); width: 0; transition: width .3s; }
+
+/* ---------- ホーム ---------- */
+.intro { padding-block: 40px 28px; display: grid; gap: 14px; max-width: 760px; }
+.intro h1 { font-size: clamp(26px, 4.4vw, 40px); font-weight: 900; margin: 0; letter-spacing: .01em; }
+.nw { display: inline-block; }
+.intro .lede { margin: 0; color: var(--muted); max-width: 40em; }
+.cta-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.cta-row .note { font-size: 13px; color: var(--muted); }
+
+section.block { padding-block: 28px; border-top: 1px solid var(--line); }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.section-head h2 { margin: 0; font-size: 22px; }
+.section-head p { margin: 0; font-size: 13.5px; color: var(--muted); }
+
+/* 時間割表 */
+.tt { display: grid; grid-template-columns: 170px repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--line); gap: 1px; }
+.tt > * { background: var(--surface); }
+.tt-colhead { padding: 10px 14px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; background: var(--sunken); }
+.tt-colhead.corner { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.tt-round { padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; background: var(--sunken); }
+.tt-round b { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+.tt-round span { font-family: var(--font-display); font-weight: 700; font-size: 14.5px; line-height: 1.45; }
+.tt-cell { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; min-width: 0; position: relative; }
+.tt-cell .day { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2px 6px; white-space: nowrap; font-family: var(--font-mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tt-cell .topic { font-size: 13.5px; line-height: 1.6; }
+.tt-cell .status { font-family: var(--font-body); font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 999px; white-space: nowrap; }
+.tt-cell.ready { cursor: pointer; }
+.tt-cell.ready:hover { background: var(--bg); }
+.tt-cell.ready .status { color: var(--accent); background: var(--accent-soft); }
+.tt-cell.done .status { color: var(--ok); background: var(--ok-soft); }
+.tt-cell.next { box-shadow: inset 0 0 0 2px var(--accent); }
+.tt-cell.locked .topic { color: var(--muted); }
+.tt-cell.locked .status { color: var(--muted); font-weight: 400; }
+.tt-cell .langtag { display: none; }
+@media (max-width: 760px) {
+  .tt { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tt-colhead { display: none; }
+  .tt-round { grid-column: 1 / -1; flex-direction: row; align-items: baseline; gap: 10px; padding: 8px 12px; }
+  .tt-cell { padding: 10px 10px 12px; }
+  .tt-cell .langtag { display: inline-flex; align-self: flex-start; }
+  .tt-cell .topic { font-size: 12.5px; }
+}
+
+/* 1日の流れ */
+.phases { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.phases li { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.phases .min { font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+.phases .name { font-weight: 700; }
+.phases .detail { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+@media (max-width: 640px) { .phases { flex-direction: column; } .phases li { flex: none !important; } }
+
+/* なぜこの3言語 */
+.why { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.why article { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.why h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.why dl { margin: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.why dt { font-size: 11.5px; color: var(--muted); letter-spacing: .06em; }
+.why dd { margin: 0; }
+@media (max-width: 860px) { .why { grid-template-columns: minmax(0, 1fr); } }
+
+.start pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 0; }
+.start p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.foot { padding-block: 28px 48px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); }
+
+/* ---------- レッスン: タイマー ---------- */
+.timerbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+.timerbar .wrap { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 10px 18px; padding-block: 10px; }
+.back { font-size: 13px; text-decoration: none; color: var(--muted); white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.clock { display: flex; align-items: baseline; gap: 10px; }
+.clock output { font-family: var(--font-mono); font-weight: 600; font-size: 28px; font-variant-numeric: tabular-nums; letter-spacing: .02em; line-height: 1; color: var(--accent); }
+.clock .phase-name { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.track { display: flex; gap: 4px; min-width: 0; }
+.seg { flex: var(--w) 1 0; min-width: 0; border: 0; background: none; padding: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.seg .bar { height: 8px; border-radius: 4px; background: var(--sunken); overflow: hidden; }
+.seg .bar span { display: block; height: 100%; width: 0; background: var(--accent); }
+.seg .lbl { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.seg.current .lbl { color: var(--ink); font-weight: 700; }
+.seg.passed .bar span { background: var(--ok); }
+.controls { display: flex; gap: 6px; }
+.controls .btn { padding: 6px 12px; font-size: 13px; }
+@media (max-width: 760px) {
+  .timerbar .wrap { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .track { grid-column: 1 / -1; grid-row: 2; }
+  .back { grid-column: 1; grid-row: 1; }
+  .clock { grid-column: 2; grid-row: 1; justify-content: center; }
+  .clock output { font-size: 22px; }
+  .clock .phase-name { display: none; }
+  .controls { grid-column: 3; grid-row: 1; }
+}
+.finished .clock output { color: var(--ok); }
+
+/* ---------- レッスン: 本文とコードパネル ---------- */
+.lesson-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr); gap: 32px; align-items: start; padding-block: 28px 24px; }
+@media (max-width: 1080px) { .lesson-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.prose { min-width: 0; max-width: 46em; }
+.prose h1 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 900; margin: 0 0 8px; }
+.prose h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); scroll-margin-top: calc(var(--bar-h) + 16px); }
+.prose h2[id^="phase-"]::before { content: attr(data-min); display: block; font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); letter-spacing: .04em; font-weight: 600; }
+.prose p, .prose ul, .prose ol { margin: 0 0 12px; }
+.prose ul, .prose ol { padding-left: 1.4em; }
+.prose li { margin-bottom: 4px; }
+.prose blockquote { margin: 0 0 14px; padding: 10px 14px; background: var(--sunken); border-radius: 8px; font-size: 14px; }
+.prose blockquote p:last-child, .prose blockquote pre:last-child { margin-bottom: 0; }
+.prose :not(pre) > code { font-size: .88em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.prose strong { font-weight: 700; }
+.prose a.file-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-family: var(--font-mono); font-size: .92em; }
+.table-wrap { overflow-x: auto; margin: 0 0 14px; border: 1px solid var(--line); border-radius: 8px; }
+.prose table { border-collapse: collapse; width: 100%; font-size: 13.5px; line-height: 1.6; }
+.prose th, .prose td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: var(--sunken); font-weight: 700; white-space: nowrap; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose td code { white-space: nowrap; }
+pre.code { background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.65; margin: 0 0 14px; }
+.prose details { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 14px; margin: -4px 0 18px; background: var(--surface); }
+.prose details[open] { border-style: solid; }
+.prose summary { cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--accent); }
+.prose details > :last-child { margin-bottom: 4px; }
+.prose details p:first-of-type { margin-top: 8px; }
+
+.codepanel { position: sticky; top: calc(var(--bar-h) + 16px); min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; max-height: calc(100vh - var(--bar-h) - 32px); overflow: hidden; scroll-margin-top: calc(var(--bar-h) + 12px); }
+@media (max-width: 1080px) { .codepanel { position: static; max-height: none; } }
+.tabs { display: flex; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--line); overflow-x: auto; background: var(--sunken); }
+.tab { border: 0; background: none; padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px 6px 0 0; white-space: nowrap; color: var(--muted); display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+.tab small { font-family: var(--font-mono); font-size: 11px; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 1px 0 var(--surface); }
+.runline { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.runline .lbl { color: var(--muted); white-space: nowrap; }
+.runline code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 12px; padding: 2px 0; }
+.codeview { overflow: auto; flex: 1; min-height: 0; }
+.codeview pre.code { border: 0; border-radius: 0; margin: 0; min-height: 100%; font-size: 12.8px; }
+.gate { padding: 28px 22px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.gate p { margin: 0; font-size: 14px; }
+.gate code { background: var(--sunken); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+.lesson-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 8px 48px; }
+.lesson-foot nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.done-btn[aria-pressed="true"] { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+
+/* highlight.js のトークン色 (テーマ変数を使う) */
+.hljs-comment, .hljs-quote { color: var(--hl-comment); font-style: italic; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in.hljs-keyword { color: var(--hl-keyword); }
+.hljs-string, .hljs-template-variable, .hljs-subst .hljs-string, .hljs-regexp { color: var(--hl-string); }
+.hljs-number, .hljs-literal { color: var(--hl-number); }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title { color: var(--hl-title); }
+.hljs-type, .hljs-built_in, .hljs-class .hljs-title { color: var(--hl-type); }
+.hljs-meta, .hljs-meta .hljs-keyword { color: var(--hl-number); }
+.hljs-meta .hljs-string { color: var(--hl-string); }
+.hljs-variable.language_, .hljs-subst { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="#plan">15分ドリル<small>JS · Go · C++</small></a>
+    <div class="tally" aria-live="polite"><span id="tally-text">完了 0 / 30 日</span><div class="tally-bar" aria-hidden="true"><span id="tally-bar"></span></div></div>
+  </div>
+</header>
+
+<main id="view-home">
+  <div class="wrap">
+    <section class="intro">
+      <p class="eyebrow">Python・Rust 経験者向け ／ 1日15分 × 30日</p>
+      <h1><span class="nw">日本企業で使われる</span><span class="nw">3言語を、</span><span class="nw">毎日15分ずつ。</span></h1>
+      <p class="lede">JavaScript → Go → C++ の順に、1日1言語ずつ回ります。同じテーマを3日続けて3つの言語で書くので、言語ごとの考え方の違いがはっきり見えます。各回は Python・Rust との比較から始まります。</p>
+      <div class="cta-row"><a class="btn primary" id="cta" href="#day1">Day 1 から始める</a><span class="note" id="cta-note"></span></div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>30日の時間割</h2><p>行がラウンド（テーマ）、列が言語です。</p></div>
+      <div class="tt" id="timetable"></div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>1日15分の流れ</h2><p>レッスン画面のタイマーがこの順に区切りを知らせます。</p></div>
+      <ol class="phases" id="phases"></ol>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>なぜこの3言語？</h2><p>日本の求人でよく見かける組み合わせから選んでいます。</p></div>
+      <div class="why">
+        <article>
+          <h3><span class="lang lang-js">JS</span>JavaScript</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>Web 系企業や SIer のフロントエンド、社内システムの画面</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>TypeScript、React、Vue.js、Node.js</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3><span class="lang lang-go">Go</span>Go</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>Web 系企業のバックエンド、インフラ・SRE</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>Docker、Kubernetes、gRPC、AWS・Google Cloud</dd></div>
+          </dl>
+        </article>
+        <article>
+          <h3><span class="lang lang-cpp">C++</span>C++</h3>
+          <dl>
+            <div><dt>主な職場</dt><dd>自動車・家電の組込み、ゲーム開発、金融、画像処理</dd></div>
+            <div><dt>一緒に求められやすいもの</dt><dd>C 言語、Unreal Engine、Linux、MISRA などのコーディング規約</dd></div>
+          </dl>
+        </article>
+      </div>
+    </section>
+
+    <section class="block start">
+      <div class="section-head"><h2>始め方</h2><p>詳しくはリポジトリの SETUP.md を見てください。</p></div>
+      <p>Node.js・Go・g++ を入れたら、リポジトリのフォルダで次を実行します。</p>
+<pre><code>node --version && go version && g++ --version   # 3つとも表示されれば準備OK
+node check.mjs                                  # 進み具合の一覧
+node check.mjs 1                                # Day 1 の演習を答え合わせ</code></pre>
+    </section>
+  </div>
+  <div class="wrap foot">進み具合はこのブラウザにだけ保存されます。答え合わせはリポジトリの <code>node check.mjs</code> で行います。</div>
+</main>
+
+<main id="view-lesson" hidden>
+  <div class="timerbar" id="timerbar">
+    <div class="wrap">
+      <a class="back" href="#plan">← 時間割</a>
+      <div class="clock"><output id="clock" aria-live="off">15:00</output><span class="phase-name" id="phase-name">比較</span></div>
+      <div class="track" id="track"></div>
+      <div class="controls">
+        <button class="btn primary" id="timer-toggle" type="button">スタート</button>
+        <button class="btn" id="timer-reset" type="button">リセット</button>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="lesson-grid">
+      <article class="prose" id="lesson-body"></article>
+      <aside class="codepanel" id="codepanel" aria-label="コード">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="runline"><span class="lbl">実行</span><code id="run-cmd"></code><button class="btn small" id="copy-run" type="button">コピー</button></div>
+        <div class="codeview" id="codeview"></div>
+      </aside>
+    </div>
+    <div class="lesson-foot">
+      <button class="btn done-btn" id="done-btn" type="button" aria-pressed="false">この日を完了にする</button>
+      <nav id="lesson-nav"></nav>
+    </div>
+  </div>
+</main>
+
+<script type="application/json" id="drill-data">{"title":"15分ドリル JS・Go・C++","minutesPerDay":15,"phases":[{"name":"比較","minutes":3,"detail":"Python・Rust との違いを表で確認"},{"name":"サンプル","minutes":5,"detail":"サンプルを実行して読む"},{"name":"演習","minutes":5,"detail":"演習を解いて答え合わせ"},{"name":"クイズ","minutes":2,"detail":"確認クイズで振り返り"}],"rounds":[{"theme":"動かす・変数・型","days":[{"day":1,"lang":"js","topic":"node で実行、const と let、number 型、===","ready":true},{"day":2,"lang":"go","topic":"go run、:= と var、ゼロ値、型変換","ready":true},{"day":3,"lang":"cpp","topic":"g++ でコンパイル、const と auto、整数の割り算","ready":true}]},{"theme":"関数","days":[{"day":4,"lang":"js","topic":"関数宣言とアロー関数、デフォルト引数","ready":false},{"day":5,"lang":"go","topic":"複数の戻り値、可変長引数","ready":false},{"day":6,"lang":"cpp","topic":"値渡しと参照渡し、const 参照","ready":false}]},{"theme":"条件分岐とループ","days":[{"day":7,"lang":"js","topic":"if・for...of・switch、truthy と falsy","ready":false},{"day":8,"lang":"go","topic":"ループは for だけ、switch、if の初期化文","ready":false},{"day":9,"lang":"cpp","topic":"for・範囲 for・while、switch","ready":false}]},{"theme":"配列とリスト","days":[{"day":10,"lang":"js","topic":"配列と map・filter・reduce","ready":false},{"day":11,"lang":"go","topic":"スライスと append、range","ready":false},{"day":12,"lang":"cpp","topic":"std::vector と \u003calgorithm>","ready":false}]},{"theme":"辞書と文字列（日本語の扱い）","days":[{"day":13,"lang":"js","topic":"オブジェクトと Map、分割代入、文字列と日本語","ready":false},{"day":14,"lang":"go","topic":"map、strings パッケージ、rune と日本語","ready":false},{"day":15,"lang":"cpp","topic":"std::map と std::string、UTF-8 の注意点","ready":false}]},{"theme":"型を作る","days":[{"day":16,"lang":"js","topic":"class、スプレッド構文","ready":false},{"day":17,"lang":"go","topic":"struct とメソッド、ポインタレシーバ","ready":false},{"day":18,"lang":"cpp","topic":"class、コンストラクタ、public と private","ready":false}]},{"theme":"エラー処理","days":[{"day":19,"lang":"js","topic":"try・catch・throw と Error","ready":false},{"day":20,"lang":"go","topic":"error 値と if err != nil、errors.Is","ready":false},{"day":21,"lang":"cpp","topic":"例外と std::optional","ready":false}]},{"theme":"その言語らしさ ①","days":[{"day":22,"lang":"js","topic":"Promise と async / await、fetch","ready":false},{"day":23,"lang":"go","topic":"goroutine と channel","ready":false},{"day":24,"lang":"cpp","topic":"ポインタと参照、スタックとヒープ","ready":false}]},{"theme":"その言語らしさ ②","days":[{"day":25,"lang":"js","topic":"import / export と TypeScript 入門","ready":false},{"day":26,"lang":"go","topic":"interface と go test","ready":false},{"day":27,"lang":"cpp","topic":"RAII とスマートポインタ","ready":false}]},{"theme":"ミニプロジェクト","days":[{"day":28,"lang":"js","topic":"ToDo 管理 CLI（JSON ファイルに保存）","ready":false},{"day":29,"lang":"go","topic":"JSON を返す API サーバー（net/http）","ready":false},{"day":30,"lang":"cpp","topic":"CSV の成績集計ツール（ファイル入出力）","ready":false}]}],"langNames":{"js":"JavaScript","go":"Go","cpp":"C++"},"lessons":{"1":{"day":1,"lang":"js","dir":"day01-js","title":"Day 1 — JavaScript ①：動かす・変数・型","html":"\u003ch1>Day 1 — JavaScript ①：動かす・変数・型\u003c/h1>\n\u003cblockquote>\n\u003cp>所要時間 15分 ／ ラウンド1「動かす・変数・型」 ／ 前提: Python・Rust の基本\u003c/p>\n\u003c/blockquote>\n\u003ch2>今日のゴール\u003c/h2>\n\u003cul>\n\u003cli>\u003ccode>node\u003c/code> コマンドで JavaScript ファイルを実行できる\u003c/li>\n\u003cli>\u003ccode>const\u003c/code> と \u003ccode>let\u003c/code> を使い分けられる\u003c/li>\n\u003cli>\u003ccode>==\u003c/code> ではなく \u003ccode>===\u003c/code> を使う理由を説明できる\u003c/li>\n\u003c/ul>\n\u003ch2>15分の進め方\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>時間\u003c/th>\n\u003cth>やること\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>0〜3分\u003c/td>\n\u003ctd>1. Python・Rust との違いを表で確認\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>3〜8分\u003c/td>\n\u003ctd>2. サンプルを実行して読む\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>8〜13分\u003c/td>\n\u003ctd>3. 演習を解いて答え合わせ\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>13〜15分\u003c/td>\n\u003ctd>4. 確認クイズ\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003ch2 id=\"phase-1\">1. Python・Rust との違い（3分）\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>やりたいこと\u003c/th>\n\u003cth>Python\u003c/th>\n\u003cth>Rust\u003c/th>\n\u003cth>JavaScript\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>再代入しない変数\u003c/td>\n\u003ctd>（仕組みなし）\u003c/td>\n\u003ctd>\u003ccode>let x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>const x = 1;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>再代入する変数\u003c/td>\n\u003ctd>\u003ccode>x = 1\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>let mut x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>let x = 1;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>文字列に値を埋め込む\u003c/td>\n\u003ctd>\u003ccode>f&quot;{x}円&quot;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>format!(&quot;{x}円&quot;)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>`${x}円`\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>等しいか比べる\u003c/td>\n\u003ctd>\u003ccode>==\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>==\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>===\u003c/code>（\u003ccode>==\u003c/code> は使わない）\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>数値の型\u003c/td>\n\u003ctd>\u003ccode>int\u003c/code> と \u003ccode>float\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>i32\u003c/code>・\u003ccode>f64\u003c/code> など\u003c/td>\n\u003ctd>\u003ccode>number\u003c/code> ひとつだけ\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>値がない\u003c/td>\n\u003ctd>\u003ccode>None\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>Option::None\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>undefined\u003c/code> と \u003ccode>null\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>画面に出力\u003c/td>\n\u003ctd>\u003ccode>print(x)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>println!(&quot;{x}&quot;)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>console.log(x)\u003c/code>\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>覚えるのは次の 3 点です。\u003c/p>\n\u003col>\n\u003cli>\u003cstrong>基本は \u003ccode>const\u003c/code>、再代入が必要なときだけ \u003ccode>let\u003c/code>\u003c/strong>。古い書き方の \u003ccode>var\u003c/code> は使いません。Rust の「デフォルトは不変」に近い感覚で書けます。\u003c/li>\n\u003cli>\u003cstrong>比較は \u003ccode>===\u003c/code>\u003c/strong>。\u003ccode>==\u003c/code> は型を勝手に変換するので \u003ccode>&quot;5&quot; == 5\u003c/code> が \u003ccode>true\u003c/code> になります。\u003c/li>\n\u003cli>\u003cstrong>数値は全部 64bit 浮動小数点数\u003c/strong>。Rust の \u003ccode>f64\u003c/code> しかない世界です。\u003ccode>7 / 2\u003c/code> は \u003ccode>3.5\u003c/code> になります。\u003c/li>\n\u003c/ol>\n\u003ch2 id=\"phase-2\">2. サンプルを実行して読む（5分）\u003c/h2>\n\u003cp>リポジトリのルートで実行します。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">node lessons/day01-js/sample.js\u003c/code>\u003c/pre>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"sample.js\">sample.js\u003c/a> を上から読み、各行のコメントと実際の出力を見比べてください。特に次の 2 か所を確認します。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;5&quot;\u003c/span> == \u003cspan class=\"hljs-number\">5\u003c/span>);  \u003cspan class=\"hljs-comment\">// true  ← 型を勝手に変換してから比較してしまう\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;5&quot;\u003c/span> === \u003cspan class=\"hljs-number\">5\u003c/span>); \u003cspan class=\"hljs-comment\">// false ← 型も含めて比較する (実務ではこちら一択)\u003c/span>\u003c/code>\u003c/pre>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-number\">2980\u003c/span> * \u003cspan class=\"hljs-number\">1.1\u003c/span>);         \u003cspan class=\"hljs-comment\">// 3278.0000000000005 ← 金額計算で事故のもと\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>((\u003cspan class=\"hljs-number\">2980\u003c/span> * \u003cspan class=\"hljs-number\">110\u003c/span>) / \u003cspan class=\"hljs-number\">100\u003c/span>); \u003cspan class=\"hljs-comment\">// 3278 ← 整数で掛けてから割ると安全\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>\u003ccode>2980 * 1.1\u003c/code> を \u003ccode>Math.ceil\u003c/code>（切り上げ）すると 3279 円になり、1 円ずれます。金額は「整数で掛けてから割る」と覚えておきましょう。\u003c/p>\n\u003cblockquote>\n\u003cp>\u003cstrong>Rust 経験者向けの注意\u003c/strong>：\u003ccode>const\u003c/code> は「変数に別の値を入れ直せない」という意味です。Rust の不変とは違い、配列やオブジェクトの\u003cstrong>中身\u003c/strong>は変更できます。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-keyword\">const\u003c/span> list = [\u003cspan class=\"hljs-number\">1\u003c/span>, \u003cspan class=\"hljs-number\">2\u003c/span>];\nlist.\u003cspan class=\"hljs-title function_\">push\u003c/span>(\u003cspan class=\"hljs-number\">3\u003c/span>);   \u003cspan class=\"hljs-comment\">// OK: 中身の変更\u003c/span>\nlist = [\u003cspan class=\"hljs-number\">9\u003c/span>];     \u003cspan class=\"hljs-comment\">// TypeError: 入れ直しはできない\u003c/span>\u003c/code>\u003c/pre>\n\u003c/blockquote>\n\u003ch2 id=\"phase-3\">3. 演習：名刺とお買い物メモ（5分）\u003c/h2>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"exercise.js\">exercise.js\u003c/a> の \u003ccode>TODO\u003c/code> を上から順に直し、次の出力にします（\u003ca href=\"#\" class=\"file-link\" data-file=\"expected.txt\">expected.txt\u003c/a> と同じ内容です）。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">=== 名刺 ===\n氏名: 山田 太郎\n会社: 株式会社サンプル\n年齢: 24歳\n--- 本日のお買い物 ---\n税抜価格: 2,980円\n税込価格: 3,278円\u003c/code>\u003c/pre>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">node lessons/day01-js/exercise.js   \u003cspan class=\"hljs-comment\"># 自分で実行して確かめる\u003c/span>\nnode check.mjs 1                    \u003cspan class=\"hljs-comment\"># 答え合わせ\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>答え合わせが通ったら、\u003ca href=\"#\" class=\"file-link\" data-file=\"solution.js\">solution.js\u003c/a> と見比べて書き方の違いを確認しましょう。\u003c/p>\n\u003ch2 id=\"phase-4\">4. 確認クイズ（2分）\u003c/h2>\n\u003cp>\u003cstrong>Q1.\u003c/strong> 次のうち、実行するとエラーになるのはどれ？\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-keyword\">const\u003c/span> a = \u003cspan class=\"hljs-number\">1\u003c/span>;   a = \u003cspan class=\"hljs-number\">2\u003c/span>;         \u003cspan class=\"hljs-comment\">// (A)\u003c/span>\n\u003cspan class=\"hljs-keyword\">let\u003c/span> b = \u003cspan class=\"hljs-number\">1\u003c/span>;     b = \u003cspan class=\"hljs-number\">2\u003c/span>;         \u003cspan class=\"hljs-comment\">// (B)\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> c = [\u003cspan class=\"hljs-number\">1\u003c/span>]; c.\u003cspan class=\"hljs-title function_\">push\u003c/span>(\u003cspan class=\"hljs-number\">2\u003c/span>);     \u003cspan class=\"hljs-comment\">// (C)\u003c/span>\u003c/code>\u003c/pre>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003cstrong>(A) だけ\u003c/strong>です。(C) は変数 \u003ccode>c\u003c/code> に別の配列を入れ直していないので問題ありません。\u003ccode>const\u003c/code> が禁止するのは再代入だけです。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q2.\u003c/strong> \u003ccode>&quot;10&quot; == 10\u003c/code> と \u003ccode>&quot;10&quot; === 10\u003c/code> の結果は？\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003ccode>true\u003c/code> と \u003ccode>false\u003c/code> です。\u003ccode>==\u003c/code> は文字列 \u003ccode>&quot;10&quot;\u003c/code> を数値に変換してから比べます。実務では \u003ccode>===\u003c/code> を使い、ESLint（JavaScript のチェックツール）の \u003ccode>eqeqeq\u003c/code> ルールで \u003ccode>==\u003c/code> を禁止しているチームも多いです。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q3.\u003c/strong> \u003ccode>10 / 4\u003c/code> の結果は、Python・Rust（\u003ccode>i32\u003c/code>）・JavaScript でそれぞれいくつ？\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>Python は \u003ccode>2.5\u003c/code>、Rust は \u003ccode>2\u003c/code>、JavaScript は \u003ccode>2.5\u003c/code> です。JavaScript で整数の割り算（切り捨て）をしたいときは \u003ccode>Math.floor(10 / 4)\u003c/code> または \u003ccode>Math.trunc(10 / 4)\u003c/code> を使います。\u003c/p>\n\u003c/details>\u003ch2>日本企業での使われ方\u003c/h2>\n\u003cul>\n\u003cli>Web 系企業・SIer を問わず、ブラウザで動く部分はほぼ JavaScript（または TypeScript）で書かれています。求人では「TypeScript」「React」「Vue.js」がよく一緒に挙がり、Vue.js は日本で特に人気があります。\u003c/li>\n\u003cli>コードレビューで \u003ccode>var\u003c/code> や \u003ccode>==\u003c/code> を使うと指摘されやすいです。ESLint と Prettier（自動整形ツール）でチームのルールを自動チェックするのが一般的です。\u003c/li>\n\u003cli>消費税や端数処理などの金額計算は業務システムでよく出てきます。浮動小数点数の誤差を避ける書き方ができると信頼されます。\u003c/li>\n\u003c/ul>\n\u003ch2>今日のまとめ\u003c/h2>\n\u003cul>\n\u003cli>変数は \u003ccode>const\u003c/code> が基本、再代入するときだけ \u003ccode>let\u003c/code>\u003c/li>\n\u003cli>比較は \u003ccode>===\u003c/code>\u003c/li>\n\u003cli>数値は全部浮動小数点数。金額は整数で掛けてから割る\u003c/li>\n\u003c/ul>\n\u003cp>\u003cstrong>次回（Day 2）\u003c/strong>：同じ「変数と型」を Go で。型変換を明示しないとコンパイルが通らない世界です。\u003c/p>\n","files":[{"id":"sample","label":"サンプル","path":"sample.js","run":"node lessons/day01-js/sample.js","raw":"// Day 1 サンプル: JavaScript の変数と型\n// 実行: node lessons/day01-js/sample.js\n\n// --- 1. const と let ---\nconst company = \"株式会社サンプル\"; // 再代入しない値 → const (基本はこちら)\nlet year = 1;                       // 再代入する値   → let\nyear = year + 1;\n// company = \"別の会社\";  ← 実行すると TypeError: Assignment to constant variable.\nconsole.log(company, year);\n\n// --- 2. 型は実行時に決まる (typeof で確認できる) ---\nconsole.log(typeof 42);           // \"number\"\nconsole.log(typeof 3.14);         // \"number\"  ← 整数と小数の区別がない\nconsole.log(typeof \"こんにちは\"); // \"string\"\nconsole.log(typeof true);         // \"boolean\"\nconsole.log(typeof undefined);    // \"undefined\"\nconsole.log(typeof null);         // \"object\"  ← 有名な歴史的バグ。null は「値がない」の意味\n\n// --- 3. テンプレートリテラル (Python の f-string に相当) ---\nconst user = \"佐藤\";\nconst age = 25;\nconsole.log(`${user}さんは${age}歳です`);\nconsole.log(`来年は${age + 1}歳`); // ${} の中には式も書ける\n\n// --- 4. == ではなく === を使う ---\nconsole.log(\"5\" == 5);  // true  ← 型を勝手に変換してから比較してしまう\nconsole.log(\"5\" === 5); // false ← 型も含めて比較する (実務ではこちら一択)\n\n// --- 5. number は全部「64bit 浮動小数点数」 ---\nconsole.log(0.1 + 0.2);          // 0.30000000000000004\nconsole.log(7 / 2);              // 3.5  ← 整数同士でも小数になる\nconsole.log(Math.floor(7 / 2));  // 3    ← 切り捨てたいときは Math.floor\nconsole.log(2980 * 1.1);         // 3278.0000000000005 ← 金額計算で事故のもと\nconsole.log((2980 * 110) / 100); // 3278 ← 整数で掛けてから割ると安全\n","html":"\u003cspan class=\"hljs-comment\">// Day 1 サンプル: JavaScript の変数と型\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行: node lessons/day01-js/sample.js\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// --- 1. const と let ---\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> company = \u003cspan class=\"hljs-string\">&quot;株式会社サンプル&quot;\u003c/span>; \u003cspan class=\"hljs-comment\">// 再代入しない値 → const (基本はこちら)\u003c/span>\n\u003cspan class=\"hljs-keyword\">let\u003c/span> year = \u003cspan class=\"hljs-number\">1\u003c/span>;                       \u003cspan class=\"hljs-comment\">// 再代入する値   → let\u003c/span>\nyear = year + \u003cspan class=\"hljs-number\">1\u003c/span>;\n\u003cspan class=\"hljs-comment\">// company = &quot;別の会社&quot;;  ← 実行すると TypeError: Assignment to constant variable.\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(company, year);\n\n\u003cspan class=\"hljs-comment\">// --- 2. 型は実行時に決まる (typeof で確認できる) ---\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-number\">42\u003c/span>);           \u003cspan class=\"hljs-comment\">// &quot;number&quot;\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-number\">3.14\u003c/span>);         \u003cspan class=\"hljs-comment\">// &quot;number&quot;  ← 整数と小数の区別がない\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-string\">&quot;こんにちは&quot;\u003c/span>); \u003cspan class=\"hljs-comment\">// &quot;string&quot;\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-literal\">true\u003c/span>);         \u003cspan class=\"hljs-comment\">// &quot;boolean&quot;\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-literal\">undefined\u003c/span>);    \u003cspan class=\"hljs-comment\">// &quot;undefined&quot;\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-keyword\">typeof\u003c/span> \u003cspan class=\"hljs-literal\">null\u003c/span>);         \u003cspan class=\"hljs-comment\">// &quot;object&quot;  ← 有名な歴史的バグ。null は「値がない」の意味\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// --- 3. テンプレートリテラル (Python の f-string に相当) ---\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> user = \u003cspan class=\"hljs-string\">&quot;佐藤&quot;\u003c/span>;\n\u003cspan class=\"hljs-keyword\">const\u003c/span> age = \u003cspan class=\"hljs-number\">25\u003c/span>;\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`\u003cspan class=\"hljs-subst\">${user}\u003c/span>さんは\u003cspan class=\"hljs-subst\">${age}\u003c/span>歳です`\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`来年は\u003cspan class=\"hljs-subst\">${age + \u003cspan class=\"hljs-number\">1\u003c/span>}\u003c/span>歳`\u003c/span>); \u003cspan class=\"hljs-comment\">// ${} の中には式も書ける\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// --- 4. == ではなく === を使う ---\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;5&quot;\u003c/span> == \u003cspan class=\"hljs-number\">5\u003c/span>);  \u003cspan class=\"hljs-comment\">// true  ← 型を勝手に変換してから比較してしまう\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;5&quot;\u003c/span> === \u003cspan class=\"hljs-number\">5\u003c/span>); \u003cspan class=\"hljs-comment\">// false ← 型も含めて比較する (実務ではこちら一択)\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// --- 5. number は全部「64bit 浮動小数点数」 ---\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-number\">0.1\u003c/span> + \u003cspan class=\"hljs-number\">0.2\u003c/span>);          \u003cspan class=\"hljs-comment\">// 0.30000000000000004\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-number\">7\u003c/span> / \u003cspan class=\"hljs-number\">2\u003c/span>);              \u003cspan class=\"hljs-comment\">// 3.5  ← 整数同士でも小数になる\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-title class_\">Math\u003c/span>.\u003cspan class=\"hljs-title function_\">floor\u003c/span>(\u003cspan class=\"hljs-number\">7\u003c/span> / \u003cspan class=\"hljs-number\">2\u003c/span>));  \u003cspan class=\"hljs-comment\">// 3    ← 切り捨てたいときは Math.floor\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-number\">2980\u003c/span> * \u003cspan class=\"hljs-number\">1.1\u003c/span>);         \u003cspan class=\"hljs-comment\">// 3278.0000000000005 ← 金額計算で事故のもと\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>((\u003cspan class=\"hljs-number\">2980\u003c/span> * \u003cspan class=\"hljs-number\">110\u003c/span>) / \u003cspan class=\"hljs-number\">100\u003c/span>); \u003cspan class=\"hljs-comment\">// 3278 ← 整数で掛けてから割ると安全\u003c/span>\n"},{"id":"exercise","label":"演習","path":"exercise.js","run":"node lessons/day01-js/exercise.js","raw":"// Day 1 演習: 名刺とお買い物メモを表示しよう\n// 実行:       node lessons/day01-js/exercise.js\n// 答え合わせ: node check.mjs 1\n//\n// 今は仮の値が入っているので、出力が期待どおりになりません。\n// TODO を上から順に直して、expected.txt と同じ出力にしよう。\n\n// TODO 1: 再代入しない値は const で宣言する\n//   name に \"山田 太郎\"、company に \"株式会社サンプル\" を入れよう\nconst name = \"???\";\nconst company = \"???\";\n\n// TODO 2: 再代入する値は let で宣言する\n//   age を 23 で宣言し、その下の行で 1 増やそう (誕生日が来た!)\nlet age = 0;\n\n// TODO 3: 税抜 2980 円の商品の税込価格 (消費税10%、1円未満切り捨て) を計算しよう\n//   ヒント: 2980 * 1.1 は 3278.0000000000005 になる (サンプル参照)。\n//          「× 110 ÷ 100」で計算してから Math.floor() で切り捨てると安全\nconst price = 2980;\nconst priceWithTax = 0;\n\n// TODO 4: 金額を「2,980」のようにカンマ区切りで表示しよう\n//   ヒント: 数値.toLocaleString(\"ja-JP\") でカンマ区切りの文字列になる\n//   余裕があれば、+ でつないでいる部分もテンプレートリテラル (`...${式}...`) に書き換えよう\nconsole.log(\"=== 名刺 ===\");\nconsole.log(\"氏名: \" + name);\nconsole.log(\"会社: \" + company);\nconsole.log(\"年齢: \" + age + \"歳\");\nconsole.log(\"--- 本日のお買い物 ---\");\nconsole.log(\"税抜価格: \" + price + \"円\");\nconsole.log(\"税込価格: \" + priceWithTax + \"円\");\n","html":"\u003cspan class=\"hljs-comment\">// Day 1 演習: 名刺とお買い物メモを表示しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行:       node lessons/day01-js/exercise.js\u003c/span>\n\u003cspan class=\"hljs-comment\">// 答え合わせ: node check.mjs 1\u003c/span>\n\u003cspan class=\"hljs-comment\">//\u003c/span>\n\u003cspan class=\"hljs-comment\">// 今は仮の値が入っているので、出力が期待どおりになりません。\u003c/span>\n\u003cspan class=\"hljs-comment\">// TODO を上から順に直して、expected.txt と同じ出力にしよう。\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// TODO 1: 再代入しない値は const で宣言する\u003c/span>\n\u003cspan class=\"hljs-comment\">//   name に &quot;山田 太郎&quot;、company に &quot;株式会社サンプル&quot; を入れよう\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> name = \u003cspan class=\"hljs-string\">&quot;???&quot;\u003c/span>;\n\u003cspan class=\"hljs-keyword\">const\u003c/span> company = \u003cspan class=\"hljs-string\">&quot;???&quot;\u003c/span>;\n\n\u003cspan class=\"hljs-comment\">// TODO 2: 再代入する値は let で宣言する\u003c/span>\n\u003cspan class=\"hljs-comment\">//   age を 23 で宣言し、その下の行で 1 増やそう (誕生日が来た!)\u003c/span>\n\u003cspan class=\"hljs-keyword\">let\u003c/span> age = \u003cspan class=\"hljs-number\">0\u003c/span>;\n\n\u003cspan class=\"hljs-comment\">// TODO 3: 税抜 2980 円の商品の税込価格 (消費税10%、1円未満切り捨て) を計算しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">//   ヒント: 2980 * 1.1 は 3278.0000000000005 になる (サンプル参照)。\u003c/span>\n\u003cspan class=\"hljs-comment\">//          「× 110 ÷ 100」で計算してから Math.floor() で切り捨てると安全\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> price = \u003cspan class=\"hljs-number\">2980\u003c/span>;\n\u003cspan class=\"hljs-keyword\">const\u003c/span> priceWithTax = \u003cspan class=\"hljs-number\">0\u003c/span>;\n\n\u003cspan class=\"hljs-comment\">// TODO 4: 金額を「2,980」のようにカンマ区切りで表示しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">//   ヒント: 数値.toLocaleString(&quot;ja-JP&quot;) でカンマ区切りの文字列になる\u003c/span>\n\u003cspan class=\"hljs-comment\">//   余裕があれば、+ でつないでいる部分もテンプレートリテラル (`...${式}...`) に書き換えよう\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;=== 名刺 ===&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;氏名: &quot;\u003c/span> + name);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;会社: &quot;\u003c/span> + company);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;年齢: &quot;\u003c/span> + age + \u003cspan class=\"hljs-string\">&quot;歳&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;--- 本日のお買い物 ---&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;税抜価格: &quot;\u003c/span> + price + \u003cspan class=\"hljs-string\">&quot;円&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;税込価格: &quot;\u003c/span> + priceWithTax + \u003cspan class=\"hljs-string\">&quot;円&quot;\u003c/span>);\n"},{"id":"expected","label":"期待する出力","path":"expected.txt","run":"node check.mjs 1","raw":"=== 名刺 ===\n氏名: 山田 太郎\n会社: 株式会社サンプル\n年齢: 24歳\n--- 本日のお買い物 ---\n税抜価格: 2,980円\n税込価格: 3,278円\n","html":"=== 名刺 ===\n氏名: 山田 太郎\n会社: 株式会社サンプル\n年齢: 24歳\n--- 本日のお買い物 ---\n税抜価格: 2,980円\n税込価格: 3,278円\n"},{"id":"solution","label":"解答例","path":"solution.js","run":"node lessons/day01-js/solution.js","raw":"// Day 1 解答例: 名刺とお買い物メモを表示しよう\n// 実行: node lessons/day01-js/solution.js\n\n// TODO 1: 再代入しない値は const\nconst name = \"山田 太郎\";\nconst company = \"株式会社サンプル\";\n\n// TODO 2: 再代入する値は let\nlet age = 23;\nage = age + 1; // age += 1; や age++; でも OK\n\n// TODO 3: 整数で掛けてから割り、Math.floor で切り捨て\nconst price = 2980;\nconst priceWithTax = Math.floor((price * 110) / 100);\n\n// TODO 4: テンプレートリテラル + toLocaleString でカンマ区切り\nconsole.log(\"=== 名刺 ===\");\nconsole.log(`氏名: ${name}`);\nconsole.log(`会社: ${company}`);\nconsole.log(`年齢: ${age}歳`);\nconsole.log(\"--- 本日のお買い物 ---\");\nconsole.log(`税抜価格: ${price.toLocaleString(\"ja-JP\")}円`);\nconsole.log(`税込価格: ${priceWithTax.toLocaleString(\"ja-JP\")}円`);\n","html":"\u003cspan class=\"hljs-comment\">// Day 1 解答例: 名刺とお買い物メモを表示しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行: node lessons/day01-js/solution.js\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// TODO 1: 再代入しない値は const\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> name = \u003cspan class=\"hljs-string\">&quot;山田 太郎&quot;\u003c/span>;\n\u003cspan class=\"hljs-keyword\">const\u003c/span> company = \u003cspan class=\"hljs-string\">&quot;株式会社サンプル&quot;\u003c/span>;\n\n\u003cspan class=\"hljs-comment\">// TODO 2: 再代入する値は let\u003c/span>\n\u003cspan class=\"hljs-keyword\">let\u003c/span> age = \u003cspan class=\"hljs-number\">23\u003c/span>;\nage = age + \u003cspan class=\"hljs-number\">1\u003c/span>; \u003cspan class=\"hljs-comment\">// age += 1; や age++; でも OK\u003c/span>\n\n\u003cspan class=\"hljs-comment\">// TODO 3: 整数で掛けてから割り、Math.floor で切り捨て\u003c/span>\n\u003cspan class=\"hljs-keyword\">const\u003c/span> price = \u003cspan class=\"hljs-number\">2980\u003c/span>;\n\u003cspan class=\"hljs-keyword\">const\u003c/span> priceWithTax = \u003cspan class=\"hljs-title class_\">Math\u003c/span>.\u003cspan class=\"hljs-title function_\">floor\u003c/span>((price * \u003cspan class=\"hljs-number\">110\u003c/span>) / \u003cspan class=\"hljs-number\">100\u003c/span>);\n\n\u003cspan class=\"hljs-comment\">// TODO 4: テンプレートリテラル + toLocaleString でカンマ区切り\u003c/span>\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;=== 名刺 ===&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`氏名: \u003cspan class=\"hljs-subst\">${name}\u003c/span>`\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`会社: \u003cspan class=\"hljs-subst\">${company}\u003c/span>`\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`年齢: \u003cspan class=\"hljs-subst\">${age}\u003c/span>歳`\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">&quot;--- 本日のお買い物 ---&quot;\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`税抜価格: \u003cspan class=\"hljs-subst\">${price.toLocaleString(\u003cspan class=\"hljs-string\">&quot;ja-JP&quot;\u003c/span>)}\u003c/span>円`\u003c/span>);\n\u003cspan class=\"hljs-variable language_\">console\u003c/span>.\u003cspan class=\"hljs-title function_\">log\u003c/span>(\u003cspan class=\"hljs-string\">`税込価格: \u003cspan class=\"hljs-subst\">${priceWithTax.toLocaleString(\u003cspan class=\"hljs-string\">&quot;ja-JP&quot;\u003c/span>)}\u003c/span>円`\u003c/span>);\n"}]},"2":{"day":2,"lang":"go","dir":"day02-go","title":"Day 2 — Go ①：動かす・変数・型","html":"\u003ch1>Day 2 — Go ①：動かす・変数・型\u003c/h1>\n\u003cblockquote>\n\u003cp>所要時間 15分 ／ ラウンド1「動かす・変数・型」 ／ 前提: Day 1 を終えていること\u003c/p>\n\u003c/blockquote>\n\u003ch2>今日のゴール\u003c/h2>\n\u003cul>\n\u003cli>\u003ccode>go run\u003c/code> で Go のプログラムを実行できる\u003c/li>\n\u003cli>\u003ccode>:=\u003c/code> と \u003ccode>var\u003c/code> と \u003ccode>const\u003c/code> を使い分けられる\u003c/li>\n\u003cli>「ゼロ値」と「型変換は明示」の 2 つのルールを説明できる\u003c/li>\n\u003c/ul>\n\u003ch2>15分の進め方\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>時間\u003c/th>\n\u003cth>やること\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>0〜3分\u003c/td>\n\u003ctd>1. Python・Rust との違いを表で確認\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>3〜8分\u003c/td>\n\u003ctd>2. サンプルを実行して読む\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>8〜13分\u003c/td>\n\u003ctd>3. 演習を解いて答え合わせ\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>13〜15分\u003c/td>\n\u003ctd>4. 確認クイズ\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003ch2 id=\"phase-1\">1. Python・Rust との違い（3分）\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>やりたいこと\u003c/th>\n\u003cth>Python\u003c/th>\n\u003cth>Rust\u003c/th>\n\u003cth>Go\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>変数を作る\u003c/td>\n\u003ctd>\u003ccode>x = 1\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>let x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>x := 1\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>型を書いて作る\u003c/td>\n\u003ctd>\u003ccode>x: int = 1\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>let x: i32 = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>var x int = 1\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>再代入\u003c/td>\n\u003ctd>できる\u003c/td>\n\u003ctd>\u003ccode>let mut\u003c/code> が必要\u003c/td>\n\u003ctd>そのままできる\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>値を入れずに宣言\u003c/td>\n\u003ctd>できない\u003c/td>\n\u003ctd>使う前に代入が必須\u003c/td>\n\u003ctd>\u003cstrong>ゼロ値\u003c/strong>が入る（\u003ccode>0\u003c/code>、\u003ccode>&quot;&quot;\u003c/code>、\u003ccode>false\u003c/code>）\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>型変換\u003c/td>\n\u003ctd>\u003ccode>float(x)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>x as f64\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>float64(x)\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>使っていない変数\u003c/td>\n\u003ctd>何も起きない\u003c/td>\n\u003ctd>警告\u003c/td>\n\u003ctd>\u003cstrong>コンパイルエラー\u003c/strong>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>文字列に値を埋め込む\u003c/td>\n\u003ctd>\u003ccode>f&quot;{x}円&quot;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>format!(&quot;{x}円&quot;)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>fmt.Sprintf(&quot;%d円&quot;, x)\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>自動整形ツール\u003c/td>\n\u003ctd>black など\u003c/td>\n\u003ctd>rustfmt\u003c/td>\n\u003ctd>gofmt（標準付属）\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>覚えるのは次の 3 点です。\u003c/p>\n\u003col>\n\u003cli>\u003cstrong>関数の中では \u003ccode>:=\u003c/code> でほぼ足りる\u003c/strong>。型を明示したいときや、値を後で入れたいときに \u003ccode>var\u003c/code> を使います。\u003c/li>\n\u003cli>\u003cstrong>値を入れずに宣言すると「ゼロ値」が入る\u003c/strong>。Rust のように「未初期化はエラー」でも、C++ のように「中身が不定」でもありません。\u003c/li>\n\u003cli>\u003cstrong>\u003ccode>int\u003c/code> と \u003ccode>float64\u003c/code> は混ぜて計算できない\u003c/strong>。\u003ccode>float64(x)\u003c/code> のように自分で変換します。Rust の \u003ccode>as\u003c/code> と同じ考え方です。\u003c/li>\n\u003c/ol>\n\u003ch2 id=\"phase-2\">2. サンプルを実行して読む（5分）\u003c/h2>\n\u003cp>リポジトリのルートで実行します。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">go run ./lessons/day02-go/sample\u003c/code>\u003c/pre>\n\u003cp>Go は \u003cstrong>1 つのフォルダが 1 つのパッケージ\u003c/strong>です。\u003ccode>main\u003c/code> 関数を持つプログラムを 3 つ（サンプル・演習・解答）置くために、\u003ccode>sample/\u003c/code>・\u003ccode>exercise/\u003c/code>・\u003ccode>solution/\u003c/code> とフォルダを分けています。\u003c/p>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"sample/main.go\">sample/main.go\u003c/a> で特に見てほしいのは、型変換の部分です。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">hourly := \u003cspan class=\"hljs-number\">1200\u003c/span> \u003cspan class=\"hljs-comment\">// int\u003c/span>\nhours := \u003cspan class=\"hljs-number\">7.5\u003c/span>   \u003cspan class=\"hljs-comment\">// float64\u003c/span>\n\u003cspan class=\"hljs-comment\">// pay := hourly * hours  ← コンパイルエラー: mismatched types int and float64\u003c/span>\npay := \u003cspan class=\"hljs-type\">float64\u003c/span>(hourly) * hours \u003cspan class=\"hljs-comment\">// 「型名(値)」で変換する\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>\u003cstrong>試してみよう\u003c/strong>：\u003ccode>sample/main.go\u003c/code> の \u003ccode>main\u003c/code> 関数の中に \u003ccode>unused := 1\u003c/code> と 1 行足して実行すると、次のエラーになります。確認したら元に戻しましょう。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">declared and not used: unused\u003c/code>\u003c/pre>\n\u003cp>Python なら何も起きず、Rust なら警告で済むところが、Go ではエラーです。消し忘れたデバッグ用の変数がコードに残らないための仕組みです。\u003c/p>\n\u003ch2 id=\"phase-3\">3. 演習：アルバイトの給与明細（5分）\u003c/h2>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"exercise/main.go\">exercise/main.go\u003c/a> の \u003ccode>TODO\u003c/code> を上から順に直し、次の出力にします（\u003ca href=\"#\" class=\"file-link\" data-file=\"expected.txt\">expected.txt\u003c/a> と同じ内容です）。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">=== 給与明細 ===\n氏名: 鈴木 花子\n時給: 1200円 / 勤務: 7.5時間 × 20日\n基本給: 180000円\n交通費: 10000円\n支給額: 190000円\n(basePay の型: int)\u003c/code>\u003c/pre>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">go run ./lessons/day02-go/exercise   \u003cspan class=\"hljs-comment\"># 自分で実行して確かめる\u003c/span>\nnode check.mjs 2                     \u003cspan class=\"hljs-comment\"># 答え合わせ\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>最後の行の \u003ccode>(basePay の型: int)\u003c/code> は、基本給を \u003ccode>int\u003c/code> に戻せているかの確認です。\u003ccode>float64\u003c/code> のままだと \u003ccode>%d\u003c/code> の部分が \u003ccode>%!d(float64=180000)\u003c/code> という表示になります。\u003c/p>\n\u003cp>答え合わせが通ったら、\u003ca href=\"#\" class=\"file-link\" data-file=\"solution/main.go\">solution/main.go\u003c/a> と見比べましょう。\u003c/p>\n\u003ch2 id=\"phase-4\">4. 確認クイズ（2分）\u003c/h2>\n\u003cp>\u003cstrong>Q1.\u003c/strong> 次のコードの出力は？\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-keyword\">var\u003c/span> n \u003cspan class=\"hljs-type\">int\u003c/span>\n\u003cspan class=\"hljs-keyword\">var\u003c/span> s \u003cspan class=\"hljs-type\">string\u003c/span>\n\u003cspan class=\"hljs-keyword\">var\u003c/span> b \u003cspan class=\"hljs-type\">bool\u003c/span>\nfmt.Println(n, s == \u003cspan class=\"hljs-string\">&quot;&quot;\u003c/span>, b)\u003c/code>\u003c/pre>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003ccode>0 true false\u003c/code> です。値を入れずに宣言した変数には、型ごとのゼロ値が入ります。Rust ではこの書き方はコンパイルエラー、Python では \u003ccode>NameError\u003c/code> になります。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q2.\u003c/strong> 次のコードはコンパイルできる？\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-keyword\">func\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span>\u003c/span> {\n\tx := \u003cspan class=\"hljs-number\">10\u003c/span>\n\ty := \u003cspan class=\"hljs-number\">20\u003c/span>\n\tfmt.Println(x)\n}\u003c/code>\u003c/pre>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>できません。\u003ccode>y\u003c/code> を使っていないので \u003ccode>declared and not used: y\u003c/code> というエラーになります。使っていない \u003ccode>import\u003c/code> もエラーになります。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q3.\u003c/strong> \u003ccode>a := 7\u003c/code>、\u003ccode>b := 2\u003c/code> のとき、\u003ccode>fmt.Println(a / b)\u003c/code> の出力は？\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003ccode>3\u003c/code> です。\u003ccode>int\u003c/code> 同士の割り算は切り捨てで、Rust と同じです。\u003ccode>3.5\u003c/code> が欲しいときは \u003ccode>float64(a) / float64(b)\u003c/code> と書きます。Day 1 の JavaScript（\u003ccode>7 / 2\u003c/code> が \u003ccode>3.5\u003c/code>）との違いに注意しましょう。\u003c/p>\n\u003c/details>\u003ch2>日本企業での使われ方\u003c/h2>\n\u003cul>\n\u003cli>Web 系企業のバックエンド（サーバー側）でよく使われます。メルカリのように、Go で多数のマイクロサービスを運用していることを公開している企業もあります。\u003c/li>\n\u003cli>Docker・Kubernetes・Terraform といったインフラの定番ツールも Go 製です。SRE やインフラ担当でも Go のコードを読む機会があります。\u003c/li>\n\u003cli>\u003ccode>gofmt\u003c/code> で書き方が統一されるので、コードレビューで「スペースの数」のような好みの議論が起きにくいです。エディタで保存時に自動整形する設定が前提になっています。\u003c/li>\n\u003c/ul>\n\u003ch2>今日のまとめ\u003c/h2>\n\u003cul>\n\u003cli>関数の中では \u003ccode>:=\u003c/code>、値を後で入れるなら \u003ccode>var\u003c/code>、定数は \u003ccode>const\u003c/code>\u003c/li>\n\u003cli>値を入れずに宣言すればゼロ値。使わない変数はコンパイルエラー\u003c/li>\n\u003cli>\u003ccode>int\u003c/code> と \u003ccode>float64\u003c/code> は混ぜられない。\u003ccode>float64(x)\u003c/code> で変換する\u003c/li>\n\u003c/ul>\n\u003cp>\u003cstrong>次回（Day 3）\u003c/strong>：同じ「変数と型」を C++ で。今度は「コンパイルしてから実行」の 2 段階です。\u003c/p>\n","files":[{"id":"sample","label":"サンプル","path":"sample/main.go","run":"go run ./lessons/day02-go/sample","raw":"// Day 2 サンプル: Go の変数と型\n// 実行: go run ./lessons/day02-go/sample\npackage main\n\nimport \"fmt\"\n\nfunc main() {\n\t// --- 1. 変数の宣言は := (関数の中ではほぼこれ) ---\n\t// 型は右辺から推論される (company は string、year は int)\n\tcompany := \"株式会社サンプル\"\n\tyear := 1\n\tyear = year + 1 // Go の変数はそのまま再代入できる (Rust の mut は不要)\n\tfmt.Println(company, year)\n\n\t// --- 2. var で型だけ書くと「ゼロ値」が入る ---\n\tvar count int    // int のゼロ値は 0\n\tvar label string // string のゼロ値は \"\" (空文字)\n\tvar ok bool      // bool のゼロ値は false\n\tfmt.Println(count, label == \"\", ok)\n\n\t// --- 3. 定数は const ---\n\tconst taxRate = 10 // 再代入しようとするとコンパイルエラー\n\tfmt.Println(\"消費税率:\", taxRate)\n\n\t// --- 4. 型変換は必ず自分で書く ---\n\thourly := 1200 // int\n\thours := 7.5   // float64\n\t// pay := hourly * hours  ← コンパイルエラー: mismatched types int and float64\n\tpay := float64(hourly) * hours // 「型名(値)」で変換する\n\tfmt.Println(\"日給:\", pay)\n\n\t// --- 5. Printf で書式を指定する ---\n\t// %s 文字列  %d 整数  %.1f 小数1桁  %v 何でも  %T 型名\n\tfmt.Printf(\"%sは%d年目\\n\", company, year)\n\tfmt.Printf(\"%.1f時間\\n\", hours)\n\tfmt.Printf(\"%v / %T\\n\", hours, hours)\n\tfmt.Println(7 / 2) // 3 ← int 同士の割り算は切り捨て (Rust と同じ)\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 2 サンプル: Go の変数と型\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行: go run ./lessons/day02-go/sample\u003c/span>\n\u003cspan class=\"hljs-keyword\">package\u003c/span> main\n\n\u003cspan class=\"hljs-keyword\">import\u003c/span> \u003cspan class=\"hljs-string\">&quot;fmt&quot;\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-keyword\">func\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span>\u003c/span> {\n\t\u003cspan class=\"hljs-comment\">// --- 1. 変数の宣言は := (関数の中ではほぼこれ) ---\u003c/span>\n\t\u003cspan class=\"hljs-comment\">// 型は右辺から推論される (company は string、year は int)\u003c/span>\n\tcompany := \u003cspan class=\"hljs-string\">&quot;株式会社サンプル&quot;\u003c/span>\n\tyear := \u003cspan class=\"hljs-number\">1\u003c/span>\n\tyear = year + \u003cspan class=\"hljs-number\">1\u003c/span> \u003cspan class=\"hljs-comment\">// Go の変数はそのまま再代入できる (Rust の mut は不要)\u003c/span>\n\tfmt.Println(company, year)\n\n\t\u003cspan class=\"hljs-comment\">// --- 2. var で型だけ書くと「ゼロ値」が入る ---\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">var\u003c/span> count \u003cspan class=\"hljs-type\">int\u003c/span>    \u003cspan class=\"hljs-comment\">// int のゼロ値は 0\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">var\u003c/span> label \u003cspan class=\"hljs-type\">string\u003c/span> \u003cspan class=\"hljs-comment\">// string のゼロ値は &quot;&quot; (空文字)\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">var\u003c/span> ok \u003cspan class=\"hljs-type\">bool\u003c/span>      \u003cspan class=\"hljs-comment\">// bool のゼロ値は false\u003c/span>\n\tfmt.Println(count, label == \u003cspan class=\"hljs-string\">&quot;&quot;\u003c/span>, ok)\n\n\t\u003cspan class=\"hljs-comment\">// --- 3. 定数は const ---\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">const\u003c/span> taxRate = \u003cspan class=\"hljs-number\">10\u003c/span> \u003cspan class=\"hljs-comment\">// 再代入しようとするとコンパイルエラー\u003c/span>\n\tfmt.Println(\u003cspan class=\"hljs-string\">&quot;消費税率:&quot;\u003c/span>, taxRate)\n\n\t\u003cspan class=\"hljs-comment\">// --- 4. 型変換は必ず自分で書く ---\u003c/span>\n\thourly := \u003cspan class=\"hljs-number\">1200\u003c/span> \u003cspan class=\"hljs-comment\">// int\u003c/span>\n\thours := \u003cspan class=\"hljs-number\">7.5\u003c/span>   \u003cspan class=\"hljs-comment\">// float64\u003c/span>\n\t\u003cspan class=\"hljs-comment\">// pay := hourly * hours  ← コンパイルエラー: mismatched types int and float64\u003c/span>\n\tpay := \u003cspan class=\"hljs-type\">float64\u003c/span>(hourly) * hours \u003cspan class=\"hljs-comment\">// 「型名(値)」で変換する\u003c/span>\n\tfmt.Println(\u003cspan class=\"hljs-string\">&quot;日給:&quot;\u003c/span>, pay)\n\n\t\u003cspan class=\"hljs-comment\">// --- 5. Printf で書式を指定する ---\u003c/span>\n\t\u003cspan class=\"hljs-comment\">// %s 文字列  %d 整数  %.1f 小数1桁  %v 何でも  %T 型名\u003c/span>\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;%sは%d年目\\n&quot;\u003c/span>, company, year)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;%.1f時間\\n&quot;\u003c/span>, hours)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;%v / %T\\n&quot;\u003c/span>, hours, hours)\n\tfmt.Println(\u003cspan class=\"hljs-number\">7\u003c/span> / \u003cspan class=\"hljs-number\">2\u003c/span>) \u003cspan class=\"hljs-comment\">// 3 ← int 同士の割り算は切り捨て (Rust と同じ)\u003c/span>\n}\n"},{"id":"exercise","label":"演習","path":"exercise/main.go","run":"go run ./lessons/day02-go/exercise","raw":"// Day 2 演習: アルバイトの給与明細を作ろう\n// 実行:       go run ./lessons/day02-go/exercise\n// 答え合わせ: node check.mjs 2\n//\n// 今は仮の値が入っているので、出力が期待どおりになりません。\n// TODO を上から順に直して、expected.txt と同じ出力にしよう。\npackage main\n\nimport \"fmt\"\n\nfunc main() {\n\t// TODO 1: := で次の4つを宣言しよう (今は仮の値が入っている)\n\t//   name: \"鈴木 花子\"  hourly: 1200  hoursPerDay: 7.5  days: 20\n\tname := \"???\"\n\thourly := 0\n\thoursPerDay := 0.0\n\tdays := 0\n\n\t// TODO 2: 1日あたりの交通費 500 円を const で定義しよう\n\tconst transportPerDay = 0\n\n\t// TODO 3: 基本給 = 時給 × 1日の勤務時間 × 日数 (円未満は切り捨て)\n\t//   int と float64 はそのまま掛け算できない (コンパイルエラーになる)。\n\t//   float64(x) で変換して計算し、最後に int(...) で整数に戻そう\n\tbasePay := 0\n\n\t// TODO 4: 交通費 (1日あたり × 日数) と 支給額 (基本給 + 交通費) を計算しよう\n\ttransport := 0\n\ttotal := 0\n\n\tfmt.Println(\"=== 給与明細 ===\")\n\tfmt.Printf(\"氏名: %s\\n\", name)\n\tfmt.Printf(\"時給: %d円 / 勤務: %.1f時間 × %d日\\n\", hourly, hoursPerDay, days)\n\tfmt.Printf(\"基本給: %d円\\n\", basePay)\n\tfmt.Printf(\"交通費: %d円\\n\", transport)\n\tfmt.Printf(\"支給額: %d円\\n\", total)\n\tfmt.Printf(\"(basePay の型: %T)\\n\", basePay)\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 2 演習: アルバイトの給与明細を作ろう\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行:       go run ./lessons/day02-go/exercise\u003c/span>\n\u003cspan class=\"hljs-comment\">// 答え合わせ: node check.mjs 2\u003c/span>\n\u003cspan class=\"hljs-comment\">//\u003c/span>\n\u003cspan class=\"hljs-comment\">// 今は仮の値が入っているので、出力が期待どおりになりません。\u003c/span>\n\u003cspan class=\"hljs-comment\">// TODO を上から順に直して、expected.txt と同じ出力にしよう。\u003c/span>\n\u003cspan class=\"hljs-keyword\">package\u003c/span> main\n\n\u003cspan class=\"hljs-keyword\">import\u003c/span> \u003cspan class=\"hljs-string\">&quot;fmt&quot;\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-keyword\">func\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span>\u003c/span> {\n\t\u003cspan class=\"hljs-comment\">// TODO 1: := で次の4つを宣言しよう (今は仮の値が入っている)\u003c/span>\n\t\u003cspan class=\"hljs-comment\">//   name: &quot;鈴木 花子&quot;  hourly: 1200  hoursPerDay: 7.5  days: 20\u003c/span>\n\tname := \u003cspan class=\"hljs-string\">&quot;???&quot;\u003c/span>\n\thourly := \u003cspan class=\"hljs-number\">0\u003c/span>\n\thoursPerDay := \u003cspan class=\"hljs-number\">0.0\u003c/span>\n\tdays := \u003cspan class=\"hljs-number\">0\u003c/span>\n\n\t\u003cspan class=\"hljs-comment\">// TODO 2: 1日あたりの交通費 500 円を const で定義しよう\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">const\u003c/span> transportPerDay = \u003cspan class=\"hljs-number\">0\u003c/span>\n\n\t\u003cspan class=\"hljs-comment\">// TODO 3: 基本給 = 時給 × 1日の勤務時間 × 日数 (円未満は切り捨て)\u003c/span>\n\t\u003cspan class=\"hljs-comment\">//   int と float64 はそのまま掛け算できない (コンパイルエラーになる)。\u003c/span>\n\t\u003cspan class=\"hljs-comment\">//   float64(x) で変換して計算し、最後に int(...) で整数に戻そう\u003c/span>\n\tbasePay := \u003cspan class=\"hljs-number\">0\u003c/span>\n\n\t\u003cspan class=\"hljs-comment\">// TODO 4: 交通費 (1日あたり × 日数) と 支給額 (基本給 + 交通費) を計算しよう\u003c/span>\n\ttransport := \u003cspan class=\"hljs-number\">0\u003c/span>\n\ttotal := \u003cspan class=\"hljs-number\">0\u003c/span>\n\n\tfmt.Println(\u003cspan class=\"hljs-string\">&quot;=== 給与明細 ===&quot;\u003c/span>)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;氏名: %s\\n&quot;\u003c/span>, name)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;時給: %d円 / 勤務: %.1f時間 × %d日\\n&quot;\u003c/span>, hourly, hoursPerDay, days)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;基本給: %d円\\n&quot;\u003c/span>, basePay)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;交通費: %d円\\n&quot;\u003c/span>, transport)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;支給額: %d円\\n&quot;\u003c/span>, total)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;(basePay の型: %T)\\n&quot;\u003c/span>, basePay)\n}\n"},{"id":"expected","label":"期待する出力","path":"expected.txt","run":"node check.mjs 2","raw":"=== 給与明細 ===\n氏名: 鈴木 花子\n時給: 1200円 / 勤務: 7.5時間 × 20日\n基本給: 180000円\n交通費: 10000円\n支給額: 190000円\n(basePay の型: int)\n","html":"=== 給与明細 ===\n氏名: 鈴木 花子\n時給: 1200円 / 勤務: 7.5時間 × 20日\n基本給: 180000円\n交通費: 10000円\n支給額: 190000円\n(basePay の型: int)\n"},{"id":"solution","label":"解答例","path":"solution/main.go","run":"go run ./lessons/day02-go/solution","raw":"// Day 2 解答例: アルバイトの給与明細を作ろう\n// 実行: go run ./lessons/day02-go/solution\npackage main\n\nimport \"fmt\"\n\nfunc main() {\n\t// TODO 1: := で宣言 (型は右辺から推論される)\n\tname := \"鈴木 花子\"\n\thourly := 1200     // int\n\thoursPerDay := 7.5 // float64\n\tdays := 20         // int\n\n\t// TODO 2: 定数は const\n\tconst transportPerDay = 500\n\n\t// TODO 3: float64 にそろえて計算し、int(...) で切り捨てて整数に戻す\n\tbasePay := int(float64(hourly) * hoursPerDay * float64(days))\n\n\t// TODO 4: 型のない定数 (transportPerDay) は int とそのまま掛けられる\n\ttransport := transportPerDay * days\n\ttotal := basePay + transport\n\n\tfmt.Println(\"=== 給与明細 ===\")\n\tfmt.Printf(\"氏名: %s\\n\", name)\n\tfmt.Printf(\"時給: %d円 / 勤務: %.1f時間 × %d日\\n\", hourly, hoursPerDay, days)\n\tfmt.Printf(\"基本給: %d円\\n\", basePay)\n\tfmt.Printf(\"交通費: %d円\\n\", transport)\n\tfmt.Printf(\"支給額: %d円\\n\", total)\n\tfmt.Printf(\"(basePay の型: %T)\\n\", basePay)\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 2 解答例: アルバイトの給与明細を作ろう\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行: go run ./lessons/day02-go/solution\u003c/span>\n\u003cspan class=\"hljs-keyword\">package\u003c/span> main\n\n\u003cspan class=\"hljs-keyword\">import\u003c/span> \u003cspan class=\"hljs-string\">&quot;fmt&quot;\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-keyword\">func\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span>\u003c/span> {\n\t\u003cspan class=\"hljs-comment\">// TODO 1: := で宣言 (型は右辺から推論される)\u003c/span>\n\tname := \u003cspan class=\"hljs-string\">&quot;鈴木 花子&quot;\u003c/span>\n\thourly := \u003cspan class=\"hljs-number\">1200\u003c/span>     \u003cspan class=\"hljs-comment\">// int\u003c/span>\n\thoursPerDay := \u003cspan class=\"hljs-number\">7.5\u003c/span> \u003cspan class=\"hljs-comment\">// float64\u003c/span>\n\tdays := \u003cspan class=\"hljs-number\">20\u003c/span>         \u003cspan class=\"hljs-comment\">// int\u003c/span>\n\n\t\u003cspan class=\"hljs-comment\">// TODO 2: 定数は const\u003c/span>\n\t\u003cspan class=\"hljs-keyword\">const\u003c/span> transportPerDay = \u003cspan class=\"hljs-number\">500\u003c/span>\n\n\t\u003cspan class=\"hljs-comment\">// TODO 3: float64 にそろえて計算し、int(...) で切り捨てて整数に戻す\u003c/span>\n\tbasePay := \u003cspan class=\"hljs-type\">int\u003c/span>(\u003cspan class=\"hljs-type\">float64\u003c/span>(hourly) * hoursPerDay * \u003cspan class=\"hljs-type\">float64\u003c/span>(days))\n\n\t\u003cspan class=\"hljs-comment\">// TODO 4: 型のない定数 (transportPerDay) は int とそのまま掛けられる\u003c/span>\n\ttransport := transportPerDay * days\n\ttotal := basePay + transport\n\n\tfmt.Println(\u003cspan class=\"hljs-string\">&quot;=== 給与明細 ===&quot;\u003c/span>)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;氏名: %s\\n&quot;\u003c/span>, name)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;時給: %d円 / 勤務: %.1f時間 × %d日\\n&quot;\u003c/span>, hourly, hoursPerDay, days)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;基本給: %d円\\n&quot;\u003c/span>, basePay)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;交通費: %d円\\n&quot;\u003c/span>, transport)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;支給額: %d円\\n&quot;\u003c/span>, total)\n\tfmt.Printf(\u003cspan class=\"hljs-string\">&quot;(basePay の型: %T)\\n&quot;\u003c/span>, basePay)\n}\n"}]},"3":{"day":3,"lang":"cpp","dir":"day03-cpp","title":"Day 3 — C++ ①：動かす・変数・型","html":"\u003ch1>Day 3 — C++ ①：動かす・変数・型\u003c/h1>\n\u003cblockquote>\n\u003cp>所要時間 15分 ／ ラウンド1「動かす・変数・型」 ／ 前提: Day 1・Day 2 を終えていること\u003c/p>\n\u003c/blockquote>\n\u003ch2>今日のゴール\u003c/h2>\n\u003cul>\n\u003cli>\u003ccode>g++\u003c/code> でコンパイルしてから実行する、という 2 段階の流れに慣れる\u003c/li>\n\u003cli>\u003ccode>const\u003c/code>・\u003ccode>auto\u003c/code>・\u003ccode>{}\u003c/code> 初期化を使える\u003c/li>\n\u003cli>整数の割り算と「未初期化の変数」の危険を説明できる\u003c/li>\n\u003c/ul>\n\u003ch2>15分の進め方\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>時間\u003c/th>\n\u003cth>やること\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>0〜3分\u003c/td>\n\u003ctd>1. Rust・Go との違いを表で確認\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>3〜8分\u003c/td>\n\u003ctd>2. サンプルをコンパイル・実行して読む\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>8〜13分\u003c/td>\n\u003ctd>3. 演習を解いて答え合わせ\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>13〜15分\u003c/td>\n\u003ctd>4. 確認クイズ\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003ch2 id=\"phase-1\">1. Rust・Go との違い（3分）\u003c/h2>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>やりたいこと\u003c/th>\n\u003cth>Rust\u003c/th>\n\u003cth>Go\u003c/th>\n\u003cth>C++\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>変更できない変数\u003c/td>\n\u003ctd>\u003ccode>let x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>const\u003c/code>（定数のみ）\u003c/td>\n\u003ctd>\u003ccode>const int x = 1;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>変更できる変数\u003c/td>\n\u003ctd>\u003ccode>let mut x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>x := 1\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>int x = 1;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>型推論\u003c/td>\n\u003ctd>\u003ccode>let x = 1;\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>x := 1\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>auto x = 1;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>値を入れずに宣言\u003c/td>\n\u003ctd>使う前に代入が必須\u003c/td>\n\u003ctd>ゼロ値が入る\u003c/td>\n\u003ctd>\u003cstrong>中身が不定\u003c/strong>（危険）\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>小数への型変換\u003c/td>\n\u003ctd>\u003ccode>x as f64\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>float64(x)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>static_cast&lt;double&gt;(x)\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>画面に出力\u003c/td>\n\u003ctd>\u003ccode>println!(&quot;{x}&quot;)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>fmt.Println(x)\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>std::cout &lt;&lt; x &lt;&lt; &quot;\\n&quot;;\u003c/code>\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>実行の流れ\u003c/td>\n\u003ctd>\u003ccode>cargo run\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>go run\u003c/code>\u003c/td>\n\u003ctd>\u003ccode>g++\u003c/code> でコンパイル → 実行\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>Python では \u003ccode>x = 1\u003c/code> がそのまま変更可能な変数になります。C++ もこれと同じで、\u003cstrong>何も付けなければ変更できる\u003c/strong>変数になります。Rust とは逆なので注意しましょう。\u003c/p>\n\u003cp>覚えるのは次の 3 点です。\u003c/p>\n\u003col>\n\u003cli>\u003cstrong>変更しない値には \u003ccode>const\u003c/code> を付ける\u003c/strong>。Rust の \u003ccode>let\u003c/code> に相当します。付け忘れてもエラーにならないので、自分で意識して付けます。\u003c/li>\n\u003cli>\u003cstrong>変数は必ず初期化する\u003c/strong>。\u003ccode>int x;\u003c/code> と書くと中身は不定です。Go のゼロ値も Rust のコンパイルエラーもありません。\u003c/li>\n\u003cli>\u003cstrong>\u003ccode>int\u003c/code> 同士の割り算は切り捨て\u003c/strong>。小数が欲しいときは \u003ccode>static_cast&lt;double&gt;(x)\u003c/code> で片方を \u003ccode>double\u003c/code> にします。\u003c/li>\n\u003c/ol>\n\u003ch2 id=\"phase-2\">2. サンプルをコンパイル・実行して読む（5分）\u003c/h2>\n\u003cp>リポジトリのルートで実行します。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/sample.cpp -o sample.out\n./sample.out\u003c/code>\u003c/pre>\n\u003cp>オプションの意味は次のとおりです。\u003c/p>\n\u003cdiv class=\"table-wrap\">\u003ctable>\n\u003cthead>\n\u003ctr>\n\u003cth>オプション\u003c/th>\n\u003cth>意味\u003c/th>\n\u003c/tr>\n\u003c/thead>\n\u003ctbody>\u003ctr>\n\u003ctd>\u003ccode>-std=c++17\u003c/code>\u003c/td>\n\u003ctd>C++17 の規格でコンパイルする\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>\u003ccode>-Wall -Wextra\u003c/code>\u003c/td>\n\u003ctd>警告をたくさん出してもらう（実務でもほぼ必須）\u003c/td>\n\u003c/tr>\n\u003ctr>\n\u003ctd>\u003ccode>-o sample.out\u003c/code>\u003c/td>\n\u003ctd>できあがる実行ファイルの名前\u003c/td>\n\u003c/tr>\n\u003c/tbody>\u003c/table>\u003c/div>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"sample.cpp\">sample.cpp\u003c/a> で特に見てほしいのは、\u003ccode>{}\u003c/code> を使った初期化です。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-type\">int\u003c/span> a{\u003cspan class=\"hljs-number\">42\u003c/span>};\n\u003cspan class=\"hljs-comment\">// int b{3.7};  ← コンパイルエラー (narrowing): 小数点以下が消えるため\u003c/span>\n\u003cspan class=\"hljs-type\">int\u003c/span> c = \u003cspan class=\"hljs-number\">3.7\u003c/span>;  \u003cspan class=\"hljs-comment\">// = だと 3 になってしまう (コンパイラによっては警告すら出ない)\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>\u003ccode>{}\u003c/code> で初期化すると、小数点以下が消えるような危ない変換をコンパイラが止めてくれます。Rust の「暗黙の型変換はしない」に少し近づけるための書き方です。\u003c/p>\n\u003cp>\u003cstrong>未初期化の変数について\u003c/strong>：次のコードは実行するたびに違う値が出ることがあり、「未定義動作」と呼ばれます。プログラムが何をしてもおかしくない状態です。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">\u003cspan class=\"hljs-type\">int\u003c/span> x;\nstd::cout &lt;&lt; x &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;  \u003cspan class=\"hljs-comment\">// 何が表示されるか分からない\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>\u003ccode>-Wall\u003c/code> を付けると \u003ccode>&#39;x&#39; is used uninitialized\u003c/code> という警告で教えてくれることがあります。警告は無視せずに直しましょう。\u003c/p>\n\u003ch2 id=\"phase-3\">3. 演習：テストの成績集計（5分）\u003c/h2>\n\u003cp>\u003ca href=\"#\" class=\"file-link\" data-file=\"exercise.cpp\">exercise.cpp\u003c/a> の \u003ccode>TODO\u003c/code> を上から順に直し、次の出力にします（\u003ca href=\"#\" class=\"file-link\" data-file=\"expected.txt\">expected.txt\u003c/a> と同じ内容です）。\u003c/p>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">=== 成績集計 ===\n受験者数: 3人\n合計点: 245点\n平均点: 81.7点\n合格ライン: 80点\n合格: true\u003c/code>\u003c/pre>\n\u003cpre class=\"code\">\u003ccode class=\"hljs\">g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/exercise.cpp -o exercise.out\n./exercise.out        \u003cspan class=\"hljs-comment\"># 自分で実行して確かめる\u003c/span>\nnode check.mjs 3      \u003cspan class=\"hljs-comment\"># 答え合わせ (コンパイルも自動でやります)\u003c/span>\u003c/code>\u003c/pre>\n\u003cp>最初にコンパイルすると \u003ccode>unused variable &#39;score1&#39;\u003c/code> のような警告が出ます。点数の変数をまだ使っていない、という意味です。TODO を解くと消えます。\u003c/p>\n\u003cp>平均点が \u003ccode>81.0点\u003c/code> になった人は、\u003ccode>int ÷ int\u003c/code> で切り捨てが起きています。TODO 3 のヒントを読み直してみましょう。\u003c/p>\n\u003cp>答え合わせが通ったら、\u003ca href=\"#\" class=\"file-link\" data-file=\"solution.cpp\">solution.cpp\u003c/a> と見比べましょう。\u003c/p>\n\u003ch2 id=\"phase-4\">4. 確認クイズ（2分）\u003c/h2>\n\u003cp>\u003cstrong>Q1.\u003c/strong> \u003ccode>std::cout &lt;&lt; 10 / 4 &lt;&lt; &quot; &quot; &lt;&lt; 10.0 / 4;\u003c/code> の出力は？\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003ccode>2 2.5\u003c/code> です。\u003ccode>10 / 4\u003c/code> は \u003ccode>int ÷ int\u003c/code> なので切り捨てられます。片方が \u003ccode>double\u003c/code>（\u003ccode>10.0\u003c/code>）なら小数で計算されます。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q2.\u003c/strong> Rust の \u003ccode>let x = 5;\u003c/code> に一番近い C++ の書き方は？\n(A) \u003ccode>int x = 5;\u003c/code>　(B) \u003ccode>const int x = 5;\u003c/code>　(C) \u003ccode>auto x = 5;\u003c/code>\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003cstrong>(B)\u003c/strong> です。Rust の \u003ccode>let\u003c/code> は変更できない変数なので、C++ では \u003ccode>const\u003c/code> を付けます。(A) と (C) は Rust の \u003ccode>let mut\u003c/code> に相当します。\u003c/p>\n\u003c/details>\u003cp>\u003cstrong>Q3.\u003c/strong> \u003ccode>bool ok = true; std::cout &lt;&lt; ok;\u003c/code> の出力は？\u003c/p>\n\u003cdetails>\u003csummary>答え\u003c/summary>\u003cp>\u003ccode>1\u003c/code> です。C++ の \u003ccode>bool\u003c/code> は、そのまま出力すると \u003ccode>1\u003c/code> / \u003ccode>0\u003c/code> になります。\u003ccode>true\u003c/code> / \u003ccode>false\u003c/code> で表示したいときは、先に \u003ccode>std::cout &lt;&lt; std::boolalpha;\u003c/code> を流します。\u003c/p>\n\u003c/details>\u003ch2>日本企業での使われ方\u003c/h2>\n\u003cul>\n\u003cli>自動車・家電・産業機器などの組込みソフト、ゲーム開発（Unreal Engine は C++ 製）、金融の高速取引システム、画像処理（OpenCV）など、日本の製造業やゲーム業界で根強く使われています。\u003c/li>\n\u003cli>現場には C++03 や C++11 の頃に書かれた古いコードも多く残っています。C++11 以降の「モダン C++」の書き方を知っていると評価されやすい一方、古い書き方も読めることが求められます。\u003c/li>\n\u003cli>自動車業界などでは、MISRA C++ のようなコーディング規約に従って書くことがよくあります。\u003c/li>\n\u003cli>日本の競技プログラミングサイト AtCoder では C++ の利用者が多いです。ただ、競技向けの \u003ccode>using namespace std;\u003c/code> や \u003ccode>#include &lt;bits/stdc++.h&gt;\u003c/code> は、実務のコードでは避けるのが一般的です。\u003c/li>\n\u003c/ul>\n\u003ch2>今日のまとめ\u003c/h2>\n\u003cul>\n\u003cli>変更しない値には自分で \u003ccode>const\u003c/code> を付ける（付けなければ変更可能）\u003c/li>\n\u003cli>変数は必ず初期化する。迷ったら \u003ccode>{}\u003c/code> で初期化する\u003c/li>\n\u003cli>\u003ccode>int ÷ int\u003c/code> は切り捨て。小数が欲しければ \u003ccode>static_cast&lt;double&gt;\u003c/code>\u003c/li>\n\u003c/ul>\n\u003cp>\u003cstrong>次回（Day 4）\u003c/strong>：ラウンド2「関数」。JavaScript の関数とアロー関数から始めます。\u003c/p>\n","files":[{"id":"sample","label":"サンプル","path":"sample.cpp","run":"g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/sample.cpp -o sample.out && ./sample.out","raw":"// Day 3 サンプル: C++ の変数と型\n// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/sample.cpp -o sample.out\n// 実行:       ./sample.out\n#include \u003ciostream>\n#include \u003cstring>\n\nint main() {\n    // --- 1. 変数は「型 名前 = 値;」 ---\n    int year = 1;\n    std::string company = \"株式会社サンプル\";\n    year = year + 1;  // C++ の変数はデフォルトで変更できる (Rust と逆)\n    std::cout \u003c\u003c company \u003c\u003c \" \" \u003c\u003c year \u003c\u003c \"年目\\n\";\n\n    // --- 2. const を付けると変更できなくなる (Rust の let に近い) ---\n    const int taxRate = 10;\n    // taxRate = 8;  ← コンパイルエラー: assignment of read-only variable\n    std::cout \u003c\u003c \"消費税率: \" \u003c\u003c taxRate \u003c\u003c \"%\\n\";\n\n    // --- 3. auto で型推論 ---\n    auto count = 3;    // int\n    auto price = 1.5;  // double\n    std::cout \u003c\u003c count * price \u003c\u003c \"\\n\";  // 4.5\n\n    // --- 4. 整数同士の割り算は切り捨て (Rust・Go と同じ) ---\n    int total = 7;\n    int people = 2;\n    std::cout \u003c\u003c total / people \u003c\u003c \"\\n\";                       // 3\n    std::cout \u003c\u003c static_cast\u003cdouble>(total) / people \u003c\u003c \"\\n\";  // 3.5\n\n    // --- 5. {} で初期化すると、危ない変換をコンパイラが止めてくれる ---\n    int a{42};\n    // int b{3.7};  ← コンパイルエラー (narrowing): 小数点以下が消えるため\n    int c = 3.7;  // = だと 3 になってしまう (コンパイラによっては警告すら出ない)\n    std::cout \u003c\u003c a \u003c\u003c \" \" \u003c\u003c c \u003c\u003c \"\\n\";\n\n    // --- 6. bool はそのまま出力すると 1 / 0 になる ---\n    bool passed = true;\n    std::cout \u003c\u003c passed \u003c\u003c \"\\n\";                      // 1\n    std::cout \u003c\u003c std::boolalpha \u003c\u003c passed \u003c\u003c \"\\n\";    // true\n    return 0;\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 3 サンプル: C++ の変数と型\u003c/span>\n\u003cspan class=\"hljs-comment\">// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/sample.cpp -o sample.out\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行:       ./sample.out\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;iostream&gt;\u003c/span>\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;string&gt;\u003c/span>\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-type\">int\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span> \u003c/span>{\n    \u003cspan class=\"hljs-comment\">// --- 1. 変数は「型 名前 = 値;」 ---\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> year = \u003cspan class=\"hljs-number\">1\u003c/span>;\n    std::string company = \u003cspan class=\"hljs-string\">&quot;株式会社サンプル&quot;\u003c/span>;\n    year = year + \u003cspan class=\"hljs-number\">1\u003c/span>;  \u003cspan class=\"hljs-comment\">// C++ の変数はデフォルトで変更できる (Rust と逆)\u003c/span>\n    std::cout &lt;&lt; company &lt;&lt; \u003cspan class=\"hljs-string\">&quot; &quot;\u003c/span> &lt;&lt; year &lt;&lt; \u003cspan class=\"hljs-string\">&quot;年目\\n&quot;\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// --- 2. const を付けると変更できなくなる (Rust の let に近い) ---\u003c/span>\n    \u003cspan class=\"hljs-type\">const\u003c/span> \u003cspan class=\"hljs-type\">int\u003c/span> taxRate = \u003cspan class=\"hljs-number\">10\u003c/span>;\n    \u003cspan class=\"hljs-comment\">// taxRate = 8;  ← コンパイルエラー: assignment of read-only variable\u003c/span>\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;消費税率: &quot;\u003c/span> &lt;&lt; taxRate &lt;&lt; \u003cspan class=\"hljs-string\">&quot;%\\n&quot;\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// --- 3. auto で型推論 ---\u003c/span>\n    \u003cspan class=\"hljs-keyword\">auto\u003c/span> count = \u003cspan class=\"hljs-number\">3\u003c/span>;    \u003cspan class=\"hljs-comment\">// int\u003c/span>\n    \u003cspan class=\"hljs-keyword\">auto\u003c/span> price = \u003cspan class=\"hljs-number\">1.5\u003c/span>;  \u003cspan class=\"hljs-comment\">// double\u003c/span>\n    std::cout &lt;&lt; count * price &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;  \u003cspan class=\"hljs-comment\">// 4.5\u003c/span>\n\n    \u003cspan class=\"hljs-comment\">// --- 4. 整数同士の割り算は切り捨て (Rust・Go と同じ) ---\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> total = \u003cspan class=\"hljs-number\">7\u003c/span>;\n    \u003cspan class=\"hljs-type\">int\u003c/span> people = \u003cspan class=\"hljs-number\">2\u003c/span>;\n    std::cout &lt;&lt; total / people &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;                       \u003cspan class=\"hljs-comment\">// 3\u003c/span>\n    std::cout &lt;&lt; \u003cspan class=\"hljs-keyword\">static_cast\u003c/span>&lt;\u003cspan class=\"hljs-type\">double\u003c/span>&gt;(total) / people &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;  \u003cspan class=\"hljs-comment\">// 3.5\u003c/span>\n\n    \u003cspan class=\"hljs-comment\">// --- 5. {} で初期化すると、危ない変換をコンパイラが止めてくれる ---\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> a{\u003cspan class=\"hljs-number\">42\u003c/span>};\n    \u003cspan class=\"hljs-comment\">// int b{3.7};  ← コンパイルエラー (narrowing): 小数点以下が消えるため\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> c = \u003cspan class=\"hljs-number\">3.7\u003c/span>;  \u003cspan class=\"hljs-comment\">// = だと 3 になってしまう (コンパイラによっては警告すら出ない)\u003c/span>\n    std::cout &lt;&lt; a &lt;&lt; \u003cspan class=\"hljs-string\">&quot; &quot;\u003c/span> &lt;&lt; c &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// --- 6. bool はそのまま出力すると 1 / 0 になる ---\u003c/span>\n    \u003cspan class=\"hljs-type\">bool\u003c/span> passed = \u003cspan class=\"hljs-literal\">true\u003c/span>;\n    std::cout &lt;&lt; passed &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;                      \u003cspan class=\"hljs-comment\">// 1\u003c/span>\n    std::cout &lt;&lt; std::boolalpha &lt;&lt; passed &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;    \u003cspan class=\"hljs-comment\">// true\u003c/span>\n    \u003cspan class=\"hljs-keyword\">return\u003c/span> \u003cspan class=\"hljs-number\">0\u003c/span>;\n}\n"},{"id":"exercise","label":"演習","path":"exercise.cpp","run":"g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/exercise.cpp -o exercise.out && ./exercise.out","raw":"// Day 3 演習: テストの成績を集計しよう\n// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/exercise.cpp -o exercise.out\n// 実行:       ./exercise.out\n// 答え合わせ: node check.mjs 3\n//\n// 今は仮の値が入っているので、出力が期待どおりになりません。\n// (最初は「unused variable」の警告も出ますが、TODO を解くと消えます)\n// TODO を上から順に直して、expected.txt と同じ出力にしよう。\n#include \u003ciomanip>  // std::setprecision を使うために必要\n#include \u003ciostream>\n\nint main() {\n    // TODO 1: 3人の点数 78, 85, 82 を int で宣言しよう\n    int score1 = 0;\n    int score2 = 0;\n    int score3 = 0;\n    const int count = 3;\n\n    // TODO 2: 合計点を計算しよう\n    int total = 0;\n\n    // TODO 3: 平均点を double で計算しよう\n    //   注意: total / count は「int ÷ int」なので小数点以下が切り捨てられる!\n    //   static_cast\u003cdouble>(total) で片方を double にしてから割ろう\n    double average = 0.0;\n\n    // TODO 4: 合格ライン 80 を const int で宣言し、\n    //   平均点が合格ライン以上なら true になる bool 変数 passed を作ろう\n    //   ヒント: average >= passLine の結果はそのまま bool になる\n    const int passLine = 0;\n    bool passed = false;\n\n    std::cout \u003c\u003c \"=== 成績集計 ===\\n\";\n    std::cout \u003c\u003c \"受験者数: \" \u003c\u003c count \u003c\u003c \"人\\n\";\n    std::cout \u003c\u003c \"合計点: \" \u003c\u003c total \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c std::fixed \u003c\u003c std::setprecision(1);  // 小数点以下1桁で表示\n    std::cout \u003c\u003c \"平均点: \" \u003c\u003c average \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c \"合格ライン: \" \u003c\u003c passLine \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c std::boolalpha;  // bool を 1/0 ではなく true/false で表示\n    std::cout \u003c\u003c \"合格: \" \u003c\u003c passed \u003c\u003c \"\\n\";\n    return 0;\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 3 演習: テストの成績を集計しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/exercise.cpp -o exercise.out\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行:       ./exercise.out\u003c/span>\n\u003cspan class=\"hljs-comment\">// 答え合わせ: node check.mjs 3\u003c/span>\n\u003cspan class=\"hljs-comment\">//\u003c/span>\n\u003cspan class=\"hljs-comment\">// 今は仮の値が入っているので、出力が期待どおりになりません。\u003c/span>\n\u003cspan class=\"hljs-comment\">// (最初は「unused variable」の警告も出ますが、TODO を解くと消えます)\u003c/span>\n\u003cspan class=\"hljs-comment\">// TODO を上から順に直して、expected.txt と同じ出力にしよう。\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;iomanip&gt;\u003c/span>  \u003cspan class=\"hljs-comment\">// std::setprecision を使うために必要\u003c/span>\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;iostream&gt;\u003c/span>\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-type\">int\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span> \u003c/span>{\n    \u003cspan class=\"hljs-comment\">// TODO 1: 3人の点数 78, 85, 82 を int で宣言しよう\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> score1 = \u003cspan class=\"hljs-number\">0\u003c/span>;\n    \u003cspan class=\"hljs-type\">int\u003c/span> score2 = \u003cspan class=\"hljs-number\">0\u003c/span>;\n    \u003cspan class=\"hljs-type\">int\u003c/span> score3 = \u003cspan class=\"hljs-number\">0\u003c/span>;\n    \u003cspan class=\"hljs-type\">const\u003c/span> \u003cspan class=\"hljs-type\">int\u003c/span> count = \u003cspan class=\"hljs-number\">3\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// TODO 2: 合計点を計算しよう\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> total = \u003cspan class=\"hljs-number\">0\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// TODO 3: 平均点を double で計算しよう\u003c/span>\n    \u003cspan class=\"hljs-comment\">//   注意: total / count は「int ÷ int」なので小数点以下が切り捨てられる!\u003c/span>\n    \u003cspan class=\"hljs-comment\">//   static_cast&lt;double&gt;(total) で片方を double にしてから割ろう\u003c/span>\n    \u003cspan class=\"hljs-type\">double\u003c/span> average = \u003cspan class=\"hljs-number\">0.0\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// TODO 4: 合格ライン 80 を const int で宣言し、\u003c/span>\n    \u003cspan class=\"hljs-comment\">//   平均点が合格ライン以上なら true になる bool 変数 passed を作ろう\u003c/span>\n    \u003cspan class=\"hljs-comment\">//   ヒント: average &gt;= passLine の結果はそのまま bool になる\u003c/span>\n    \u003cspan class=\"hljs-type\">const\u003c/span> \u003cspan class=\"hljs-type\">int\u003c/span> passLine = \u003cspan class=\"hljs-number\">0\u003c/span>;\n    \u003cspan class=\"hljs-type\">bool\u003c/span> passed = \u003cspan class=\"hljs-literal\">false\u003c/span>;\n\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;=== 成績集計 ===\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;受験者数: &quot;\u003c/span> &lt;&lt; count &lt;&lt; \u003cspan class=\"hljs-string\">&quot;人\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合計点: &quot;\u003c/span> &lt;&lt; total &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; std::fixed &lt;&lt; std::\u003cspan class=\"hljs-built_in\">setprecision\u003c/span>(\u003cspan class=\"hljs-number\">1\u003c/span>);  \u003cspan class=\"hljs-comment\">// 小数点以下1桁で表示\u003c/span>\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;平均点: &quot;\u003c/span> &lt;&lt; average &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合格ライン: &quot;\u003c/span> &lt;&lt; passLine &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; std::boolalpha;  \u003cspan class=\"hljs-comment\">// bool を 1/0 ではなく true/false で表示\u003c/span>\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合格: &quot;\u003c/span> &lt;&lt; passed &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;\n    \u003cspan class=\"hljs-keyword\">return\u003c/span> \u003cspan class=\"hljs-number\">0\u003c/span>;\n}\n"},{"id":"expected","label":"期待する出力","path":"expected.txt","run":"node check.mjs 3","raw":"=== 成績集計 ===\n受験者数: 3人\n合計点: 245点\n平均点: 81.7点\n合格ライン: 80点\n合格: true\n","html":"=== 成績集計 ===\n受験者数: 3人\n合計点: 245点\n平均点: 81.7点\n合格ライン: 80点\n合格: true\n"},{"id":"solution","label":"解答例","path":"solution.cpp","run":"g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/solution.cpp -o solution.out && ./solution.out","raw":"// Day 3 解答例: テストの成績を集計しよう\n// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/solution.cpp -o solution.out\n// 実行:       ./solution.out\n#include \u003ciomanip>\n#include \u003ciostream>\n\nint main() {\n    // TODO 1\n    int score1 = 78;\n    int score2 = 85;\n    int score3 = 82;\n    const int count = 3;\n\n    // TODO 2\n    int total = score1 + score2 + score3;\n\n    // TODO 3: 片方を double にすれば、割り算全体が double で計算される\n    double average = static_cast\u003cdouble>(total) / count;\n\n    // TODO 4: 比較の結果はそのまま bool\n    const int passLine = 80;\n    bool passed = average >= passLine;\n\n    std::cout \u003c\u003c \"=== 成績集計 ===\\n\";\n    std::cout \u003c\u003c \"受験者数: \" \u003c\u003c count \u003c\u003c \"人\\n\";\n    std::cout \u003c\u003c \"合計点: \" \u003c\u003c total \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c std::fixed \u003c\u003c std::setprecision(1);\n    std::cout \u003c\u003c \"平均点: \" \u003c\u003c average \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c \"合格ライン: \" \u003c\u003c passLine \u003c\u003c \"点\\n\";\n    std::cout \u003c\u003c std::boolalpha;\n    std::cout \u003c\u003c \"合格: \" \u003c\u003c passed \u003c\u003c \"\\n\";\n    return 0;\n}\n","html":"\u003cspan class=\"hljs-comment\">// Day 3 解答例: テストの成績を集計しよう\u003c/span>\n\u003cspan class=\"hljs-comment\">// コンパイル: g++ -std=c++17 -Wall -Wextra lessons/day03-cpp/solution.cpp -o solution.out\u003c/span>\n\u003cspan class=\"hljs-comment\">// 実行:       ./solution.out\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;iomanip&gt;\u003c/span>\u003c/span>\n\u003cspan class=\"hljs-meta\">#\u003cspan class=\"hljs-keyword\">include\u003c/span> \u003cspan class=\"hljs-string\">&lt;iostream&gt;\u003c/span>\u003c/span>\n\n\u003cspan class=\"hljs-function\">\u003cspan class=\"hljs-type\">int\u003c/span> \u003cspan class=\"hljs-title\">main\u003c/span>\u003cspan class=\"hljs-params\">()\u003c/span> \u003c/span>{\n    \u003cspan class=\"hljs-comment\">// TODO 1\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> score1 = \u003cspan class=\"hljs-number\">78\u003c/span>;\n    \u003cspan class=\"hljs-type\">int\u003c/span> score2 = \u003cspan class=\"hljs-number\">85\u003c/span>;\n    \u003cspan class=\"hljs-type\">int\u003c/span> score3 = \u003cspan class=\"hljs-number\">82\u003c/span>;\n    \u003cspan class=\"hljs-type\">const\u003c/span> \u003cspan class=\"hljs-type\">int\u003c/span> count = \u003cspan class=\"hljs-number\">3\u003c/span>;\n\n    \u003cspan class=\"hljs-comment\">// TODO 2\u003c/span>\n    \u003cspan class=\"hljs-type\">int\u003c/span> total = score1 + score2 + score3;\n\n    \u003cspan class=\"hljs-comment\">// TODO 3: 片方を double にすれば、割り算全体が double で計算される\u003c/span>\n    \u003cspan class=\"hljs-type\">double\u003c/span> average = \u003cspan class=\"hljs-keyword\">static_cast\u003c/span>&lt;\u003cspan class=\"hljs-type\">double\u003c/span>&gt;(total) / count;\n\n    \u003cspan class=\"hljs-comment\">// TODO 4: 比較の結果はそのまま bool\u003c/span>\n    \u003cspan class=\"hljs-type\">const\u003c/span> \u003cspan class=\"hljs-type\">int\u003c/span> passLine = \u003cspan class=\"hljs-number\">80\u003c/span>;\n    \u003cspan class=\"hljs-type\">bool\u003c/span> passed = average &gt;= passLine;\n\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;=== 成績集計 ===\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;受験者数: &quot;\u003c/span> &lt;&lt; count &lt;&lt; \u003cspan class=\"hljs-string\">&quot;人\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合計点: &quot;\u003c/span> &lt;&lt; total &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; std::fixed &lt;&lt; std::\u003cspan class=\"hljs-built_in\">setprecision\u003c/span>(\u003cspan class=\"hljs-number\">1\u003c/span>);\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;平均点: &quot;\u003c/span> &lt;&lt; average &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合格ライン: &quot;\u003c/span> &lt;&lt; passLine &lt;&lt; \u003cspan class=\"hljs-string\">&quot;点\\n&quot;\u003c/span>;\n    std::cout &lt;&lt; std::boolalpha;\n    std::cout &lt;&lt; \u003cspan class=\"hljs-string\">&quot;合格: &quot;\u003c/span> &lt;&lt; passed &lt;&lt; \u003cspan class=\"hljs-string\">&quot;\\n&quot;\u003c/span>;\n    \u003cspan class=\"hljs-keyword\">return\u003c/span> \u003cspan class=\"hljs-number\">0\u003c/span>;\n}\n"}]}}}</script>
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById("drill-data").textContent);
+  const $ = (id) => document.getElementById(id);
+  const allDays = data.rounds.flatMap((r) => r.days);
+  const readyDays = allDays.filter((d) => d.ready).map((d) => d.day);
+  const shortLang = { js: "JS", go: "Go", cpp: "C++" };
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // ---------- 進み具合 (このブラウザの localStorage にだけ保存) ----------
+  const STORE_KEY = "drill15:done";
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]")); } catch (e) { /* 保存できない環境では無視 */ }
+  const saveDone = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify([...done])); } catch (e) { /* 無視 */ } };
+  const nextDay = () => readyDays.find((d) => !done.has(d));
+
+  function renderTally() {
+    $("tally-text").textContent = `完了 ${done.size} / ${allDays.length} 日`;
+    $("tally-bar").style.width = `${(done.size / allDays.length) * 100}%`;
+  }
+
+  // ---------- ホーム ----------
+  function renderHome() {
+    const tt = $("timetable");
+    const head = ['<div class="tt-colhead corner">ラウンド</div>'];
+    for (const lang of ["js", "go", "cpp"]) head.push(`<div class="tt-colhead"><span class="lang lang-${lang}">${shortLang[lang]}</span>${data.langNames[lang]}</div>`);
+    const upNext = nextDay();
+    const rows = data.rounds.map((round, i) => {
+      const cells = round.days.map((d) => {
+        const isDone = done.has(d.day);
+        const cls = ["tt-cell", d.ready ? "ready" : "locked", isDone ? "done" : "", d.day === upNext ? "next" : ""].join(" ");
+        const status = isDone ? "完了" : d.day === upNext ? "次はここ" : d.ready ? "公開中" : "準備中";
+        const inner = `<span class="day">Day ${d.day}<span class="status">${status}</span></span><span class="lang lang-${d.lang} langtag">${shortLang[d.lang]}</span><span class="topic">${esc(d.topic)}</span>`;
+        return d.ready ? `<a class="${cls}" href="#day${d.day}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+      });
+      return `<div class="tt-round"><b>ROUND ${String(i + 1).padStart(2, "0")}</b><span>${esc(round.theme)}</span></div>${cells.join("")}`;
+    });
+    tt.innerHTML = head.join("") + rows.join("");
+
+    $("phases").innerHTML = data.phases.map((p, i) => {
+      const from = data.phases.slice(0, i).reduce((s, x) => s + x.minutes, 0);
+      return `<li style="flex:${p.minutes} 1 0"><span class="min">${from}〜${from + p.minutes}分</span><span class="name">${esc(p.name)}</span><span class="detail">${esc(p.detail)}</span></li>`;
+    }).join("");
+
+    const cta = $("cta");
+    if (upNext) {
+      cta.href = `#day${upNext}`;
+      cta.textContent = done.size ? `続き: Day ${upNext} へ` : `Day ${upNext} から始める`;
+    } else {
+      cta.href = `#day${readyDays[readyDays.length - 1]}`;
+      cta.textContent = "公開分はすべて完了";
+    }
+    $("cta-note").textContent = `デモ版: Day ${readyDays[0]}〜${readyDays[readyDays.length - 1]} を公開中`;
+  }
+
+  // ---------- タイマー ----------
+  const TOTAL = data.minutesPerDay * 60;
+  const bounds = [];
+  data.phases.reduce((s, p) => { bounds.push([s * 60, (s + p.minutes) * 60]); return s + p.minutes; }, 0);
+  const timer = { base: 0, startedAt: 0, running: false, handle: 0, lastPhase: 0, finished: false };
+  let audio = null;
+  let wakeLock = null;
+
+  $("track").innerHTML = data.phases.map((p, i) =>
+    `<button class="seg" type="button" style="--w:${p.minutes}" data-phase="${i + 1}" title="${esc(p.detail)}"><span class="bar"><span></span></span><span class="lbl">${esc(p.name)} ${p.minutes}分</span></button>`
+  ).join("");
+
+  const elapsed = () => Math.min(TOTAL, timer.base + (timer.running ? (Date.now() - timer.startedAt) / 1000 : 0));
+  const phaseAt = (t) => Math.max(0, bounds.findIndex(([a, b]) => t >= a && t < b));
+
+  function chime(times) {
+    if (!audio) return;
+    const now = audio.currentTime;
+    for (let i = 0; i < times; i++) {
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now + i * 0.28);
+      gain.gain.exponentialRampToValueAtTime(0.2, now + i * 0.28 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.28 + 0.24);
+      osc.connect(gain).connect(audio.destination);
+      osc.start(now + i * 0.28);
+      osc.stop(now + i * 0.28 + 0.26);
+    }
+  }
+
+  function paintTimer() {
+    const t = elapsed();
+    const left = Math.max(0, Math.ceil(TOTAL - t));
+    $("clock").textContent = `${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`;
+    const current = t >= TOTAL ? data.phases.length : phaseAt(t);
+    document.querySelectorAll(".seg").forEach((seg, i) => {
+      const [a, b] = bounds[i];
+      seg.querySelector(".bar span").style.width = `${Math.min(100, Math.max(0, ((t - a) / (b - a)) * 100))}%`;
+      seg.classList.toggle("current", i === current);
+      seg.classList.toggle("passed", t >= b);
+    });
+    $("phase-name").textContent = t >= TOTAL ? "おつかれさまでした" : `${data.phases[current].name}の時間`;
+    if (timer.running && current !== timer.lastPhase) {
+      chime(current >= data.phases.length ? 3 : 1);
+      timer.lastPhase = current;
+    }
+    if (t >= TOTAL && !timer.finished) {
+      timer.finished = true;
+      stopTimer();
+      $("timerbar").classList.add("finished");
+      $("timer-toggle").textContent = "もう一度";
+    }
+  }
+
+  function startTimer() {
+    if (timer.finished) resetTimer();
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) { audio = null; }
+    try { navigator.wakeLock?.request("screen").then((l) => { wakeLock = l; }).catch(() => {}); } catch (e) { /* 使えない環境では無視 */ }
+    timer.startedAt = Date.now();
+    timer.running = true;
+    timer.handle = setInterval(paintTimer, 250);
+    $("timer-toggle").textContent = "一時停止";
+  }
+  function stopTimer() {
+    if (timer.running) timer.base = elapsed();
+    timer.running = false;
+    clearInterval(timer.handle);
+    try { wakeLock?.release(); } catch (e) { /* 無視 */ }
+    wakeLock = null;
+    $("timer-toggle").textContent = timer.base > 0 && !timer.finished ? "再開" : "スタート";
+  }
+  function resetTimer() {
+    stopTimer();
+    Object.assign(timer, { base: 0, lastPhase: 0, finished: false });
+    $("timerbar").classList.remove("finished");
+    $("timer-toggle").textContent = "スタート";
+    paintTimer();
+  }
+  $("timer-toggle").addEventListener("click", () => (timer.running ? stopTimer() : startTimer()));
+  $("timer-reset").addEventListener("click", resetTimer);
+  $("track").addEventListener("click", (e) => {
+    const seg = e.target.closest(".seg");
+    if (!seg) return;
+    document.getElementById(`phase-${seg.dataset.phase}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // ---------- レッスン ----------
+  let current = null;
+  const revealed = new Set();
+
+  function copyText(text, button) {
+    const ok = () => { const t = button.textContent; button.textContent = "コピーしました"; setTimeout(() => { button.textContent = t; }, 1400); };
+    const fallback = () => {
+      const range = document.createRange();
+      range.selectNodeContents(button.previousElementSibling || button);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      button.textContent = "選択しました。コピーしてください";
+    };
+    try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+  }
+
+  function showFile(id) {
+    const file = current.files.find((f) => f.id === id) || current.files[0];
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.id === file.id)));
+    $("run-cmd").textContent = file.run;
+    const view = $("codeview");
+    if (file.id === "solution" && !revealed.has(current.day)) {
+      view.innerHTML = `<div class="gate"><p>まずは自分で演習を解いてみましょう。</p><p>答え合わせ: <code>node check.mjs ${current.day}</code></p><button class="btn" type="button" id="reveal">解答例を表示する</button></div>`;
+      $("reveal").addEventListener("click", () => { revealed.add(current.day); showFile("solution"); });
+    } else {
+      view.innerHTML = `<pre class="code"><code class="hljs">${file.html}</code></pre>`;
+    }
+    view.scrollTop = 0;
+  }
+
+  function renderLesson(day) {
+    current = data.lessons[day];
+    const body = $("lesson-body");
+    body.innerHTML = current.html;
+    // 「## 1. 〇〇」見出しに、タイマー上の時間帯を添える
+    bounds.forEach(([a, b], i) => {
+      const h = document.getElementById(`phase-${i + 1}`);
+      if (h) h.dataset.min = `${a / 60}〜${b / 60}分 ・ ${data.phases[i].name}`;
+    });
+
+    $("tabs").innerHTML = current.files.map((f) =>
+      `<button class="tab" role="tab" type="button" data-id="${f.id}" aria-selected="false">${esc(f.label)}<small>${esc(f.path)}</small></button>`
+    ).join("");
+    showFile("sample");
+
+    const doneBtn = $("done-btn");
+    const paintDone = () => {
+      const isDone = done.has(day);
+      doneBtn.setAttribute("aria-pressed", String(isDone));
+      doneBtn.textContent = isDone ? `Day ${day} 完了済み（取り消す）` : "この日を完了にする";
+    };
+    paintDone();
+    doneBtn.onclick = () => {
+      done.has(day) ? done.delete(day) : done.add(day);
+      saveDone(); paintDone(); renderTally();
+    };
+
+    const idx = readyDays.indexOf(day);
+    const prev = readyDays[idx - 1];
+    const next = readyDays[idx + 1];
+    const meta = (d) => allDays.find((x) => x.day === d);
+    $("lesson-nav").innerHTML = [
+      prev ? `<a class="btn" href="#day${prev}">← Day ${prev}（${data.langNames[meta(prev).lang]}）</a>` : "",
+      next ? `<a class="btn" href="#day${next}">Day ${next}（${data.langNames[meta(next).lang]}）→</a>` : `<a class="btn" href="#plan">時間割に戻る</a>`,
+    ].join("");
+    resetTimer();
+  }
+
+  $("tabs").addEventListener("click", (e) => { const t = e.target.closest(".tab"); if (t) showFile(t.dataset.id); });
+  $("copy-run").addEventListener("click", (e) => copyText($("run-cmd").textContent, e.currentTarget));
+  $("lesson-body").addEventListener("click", (e) => {
+    const link = e.target.closest("a.file-link");
+    if (!link) return;
+    e.preventDefault();
+    const file = current.files.find((f) => f.path === link.dataset.file);
+    if (!file) return;
+    showFile(file.id);
+    if (getComputedStyle($("codepanel")).position !== "sticky") $("codepanel").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // タイマーバーの高さを、見出しのスクロール位置とコードパネルの固定位置に反映する
+  const syncBar = () => document.documentElement.style.setProperty("--bar-h", `${$("timerbar").offsetHeight}px`);
+  try { new ResizeObserver(syncBar).observe($("timerbar")); } catch (e) { addEventListener("resize", syncBar); }
+
+  // ---------- 画面の切り替え (#day1 のようなアンカー) ----------
+  function route() {
+    const m = location.hash.match(/^#day(\d+)$/);
+    const day = m && Number(m[1]);
+    if (day && data.lessons[day]) {
+      $("view-home").hidden = true;
+      $("view-lesson").hidden = false;
+      if (!current || current.day !== day) renderLesson(day);
+      syncBar();
+    } else {
+      if (!$("view-lesson").hidden) stopTimer();
+      $("view-lesson").hidden = true;
+      $("view-home").hidden = false;
+      renderHome();
+    }
+    window.scrollTo(0, 0);
+  }
+  addEventListener("hashchange", route);
+  renderTally();
+  route();
+})();
+</script>
+</body>
+</html>
