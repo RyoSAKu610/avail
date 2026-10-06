@@ -43,8 +43,8 @@ node check.mjs 1      # Day 1 の演習を答え合わせ
 | 3 | 条件分岐とループ | **[Day 7](lessons/day07-js/README.md)** if・for...of・switch、truthy と falsy | **[Day 8](lessons/day08-go/README.md)** ループは for だけ、switch、if の初期化文 | **[Day 9](lessons/day09-cpp/README.md)** for・範囲 for・while、switch |
 | 4 | 配列とリスト | **[Day 10](lessons/day10-js/README.md)** 配列と map・filter・reduce | **[Day 11](lessons/day11-go/README.md)** スライスと append、range | **[Day 12](lessons/day12-cpp/README.md)** std::vector と &lt;algorithm&gt; |
 | 5 | 辞書と文字列（日本語の扱い） | **[Day 13](lessons/day13-js/README.md)** オブジェクトと Map、分割代入、文字列と日本語 | **[Day 14](lessons/day14-go/README.md)** map、strings パッケージ、rune と日本語 | **[Day 15](lessons/day15-cpp/README.md)** std::map と std::string、UTF-8 の注意点 |
-| 6 | 型を作る | Day 16 class、スプレッド構文 | Day 17 struct とメソッド、ポインタレシーバ | Day 18 class、コンストラクタ、public と private |
-| 7 | エラー処理 | Day 19 try・catch・throw と Error | Day 20 error 値と if err != nil、errors.Is | Day 21 例外と std::optional |
+| 6 | 型を作る | **[Day 16](lessons/day16-js/README.md)** class、スプレッド構文 | **[Day 17](lessons/day17-go/README.md)** struct とメソッド、ポインタレシーバ | **[Day 18](lessons/day18-cpp/README.md)** class、コンストラクタ、public と private |
+| 7 | エラー処理 | **[Day 19](lessons/day19-js/README.md)** try・catch・throw と Error | **[Day 20](lessons/day20-go/README.md)** error 値と if err != nil、errors.Is | **[Day 21](lessons/day21-cpp/README.md)** 例外と std::optional |
 | 8 | その言語らしさ ① | Day 22 Promise と async / await、fetch | Day 23 goroutine と channel | Day 24 ポインタと参照、スタックとヒープ |
 | 9 | その言語らしさ ② | Day 25 import / export と TypeScript 入門 | Day 26 interface と go test | Day 27 RAII とスマートポインタ |
 | 10 | ミニプロジェクト | Day 28 ToDo 管理 CLI（JSON ファイルに保存） | Day 29 JSON を返す API サーバー（net/http） | Day 30 CSV の成績集計ツール（ファイル入出力） |
