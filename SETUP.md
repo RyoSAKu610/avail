@@ -4,7 +4,7 @@
 
 | 道具 | 使う言語 | 必要なバージョン |
 | --- | --- | --- |
-| Node.js | JavaScript（答え合わせスクリプトも Node.js で動きます） | 20 以上（LTS 版がおすすめ） |
+| Node.js | JavaScript・TypeScript（答え合わせスクリプトも Node.js で動きます） | 22.18 以上（LTS 版がおすすめ。Day 25 で `.ts` ファイルを直接実行するため） |
 | Go | Go | 1.22 以上 |
 | g++ | C++ | C++17 に対応したもの（GCC 9 以上 / macOS の Apple clang） |
 

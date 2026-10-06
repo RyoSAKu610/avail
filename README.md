@@ -46,7 +46,7 @@ node check.mjs 1      # Day 1 の演習を答え合わせ
 | 6 | 型を作る | **[Day 16](lessons/day16-js/README.md)** class、スプレッド構文 | **[Day 17](lessons/day17-go/README.md)** struct とメソッド、ポインタレシーバ | **[Day 18](lessons/day18-cpp/README.md)** class、コンストラクタ、public と private |
 | 7 | エラー処理 | **[Day 19](lessons/day19-js/README.md)** try・catch・throw と Error | **[Day 20](lessons/day20-go/README.md)** error 値と if err != nil、errors.Is | **[Day 21](lessons/day21-cpp/README.md)** 例外と std::optional |
 | 8 | その言語らしさ ① | **[Day 22](lessons/day22-js/README.md)** Promise と async / await、fetch | **[Day 23](lessons/day23-go/README.md)** goroutine と channel | **[Day 24](lessons/day24-cpp/README.md)** ポインタと参照、スタックとヒープ |
-| 9 | その言語らしさ ② | Day 25 import / export と TypeScript 入門 | Day 26 interface と go test | Day 27 RAII とスマートポインタ |
+| 9 | その言語らしさ ② | **[Day 25](lessons/day25-js/README.md)** import / export と TypeScript 入門 | **[Day 26](lessons/day26-go/README.md)** interface と go test | **[Day 27](lessons/day27-cpp/README.md)** RAII とスマートポインタ |
 | 10 | ミニプロジェクト | Day 28 ToDo 管理 CLI（JSON ファイルに保存） | Day 29 JSON を返す API サーバー（net/http） | Day 30 CSV の成績集計ツール（ファイル入出力） |
 <!-- roadmap:end -->
 

@@ -32,6 +32,9 @@ jobs:
       - name: Go vet
         run: go vet ./lessons/...
 
+      - name: Go tests pass for solutions
+        run: go test $(go list ./lessons/... | grep '/solution$')
+
       - name: Site and README roadmap are up to date
         run: |
           cd site
