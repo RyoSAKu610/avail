@@ -53,6 +53,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   background: var(--bg);
@@ -390,7 +391,7 @@ node check.mjs 1                                # Day 1 の演習を答え合わ
       cta.href = `#day${readyDays[readyDays.length - 1]}`;
       cta.textContent = "公開分はすべて完了";
     }
-    $("cta-note").textContent = `デモ版: Day ${readyDays[0]}〜${readyDays[readyDays.length - 1]} を公開中`;
+    $("cta-note").textContent = readyDays.length === allDays.length ? `全 ${allDays.length} 日分を公開中` : `公開中: Day ${readyDays[0]}〜${readyDays[readyDays.length - 1]}`;
   }
 
   // ---------- タイマー ----------

@@ -57,7 +57,7 @@ echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc && source ~/.bashrc
 node --version
 go version
 g++ --version
-node check.mjs      # Day 1〜3 が「… 途中」と表示されれば OK
+node check.mjs      # 30 日分が「… 途中」と一覧表示されれば OK (全部の演習を実行するので 30 秒ほどかかります)
 ```
 
 ## エディタ（おすすめ）

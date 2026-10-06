@@ -7,7 +7,7 @@ Python・Rust・HTML・CSS を学んだ人が、**日本企業でよく使われ
 - 毎回 **Python・Rust との比較表**から始まります。知っている言語を足がかりにして覚えられます。
 - 演習は `node check.mjs <日>` で自動的に答え合わせできます。
 
-> **現在はデモ版です。** Day 1〜3（3言語ぶんの「変数と型」）を公開しています。Day 4 以降は下の時間割のとおり作る予定です。
+> **全 30 日分を公開しています。** Day 1 から順に、1 日 1 つずつ進めてください。
 
 ## 1日15分の流れ
 
@@ -47,7 +47,7 @@ node check.mjs 1      # Day 1 の演習を答え合わせ
 | 7 | エラー処理 | **[Day 19](lessons/day19-js/README.md)** try・catch・throw と Error | **[Day 20](lessons/day20-go/README.md)** error 値と if err != nil、errors.Is | **[Day 21](lessons/day21-cpp/README.md)** 例外と std::optional |
 | 8 | その言語らしさ ① | **[Day 22](lessons/day22-js/README.md)** Promise と async / await、fetch | **[Day 23](lessons/day23-go/README.md)** goroutine と channel | **[Day 24](lessons/day24-cpp/README.md)** ポインタと参照、スタックとヒープ |
 | 9 | その言語らしさ ② | **[Day 25](lessons/day25-js/README.md)** import / export と TypeScript 入門 | **[Day 26](lessons/day26-go/README.md)** interface と go test | **[Day 27](lessons/day27-cpp/README.md)** RAII とスマートポインタ |
-| 10 | ミニプロジェクト | Day 28 ToDo 管理 CLI（JSON ファイルに保存） | Day 29 JSON を返す API サーバー（net/http） | Day 30 CSV の成績集計ツール（ファイル入出力） |
+| 10 | ミニプロジェクト | **[Day 28](lessons/day28-js/README.md)** ToDo 管理 CLI（JSON ファイルに保存） | **[Day 29](lessons/day29-go/README.md)** JSON を返す API サーバー（net/http） | **[Day 30](lessons/day30-cpp/README.md)** CSV の成績集計ツール（ファイル入出力） |
 <!-- roadmap:end -->
 
 ## なぜこの3言語？
@@ -70,7 +70,9 @@ node check.mjs 1      # Day 1 の演習を答え合わせ
 ├── lessons/
 │   ├── day01-js/        README.md, sample.js, exercise.js, solution.js, expected.txt
 │   ├── day02-go/        README.md, sample/, exercise/, solution/, expected.txt
-│   └── day03-cpp/       README.md, sample.cpp, exercise.cpp, solution.cpp, expected.txt
+│   ├── day03-cpp/       README.md, sample.cpp, exercise.cpp, solution.cpp, expected.txt
+│   ├── ...              (Day 25 は TypeScript なので .ts、Day 26 は main_test.go 付き)
+│   └── day30-cpp/       README.md, ..., scores.csv
 ├── site/                ブラウザ用ビューア (index.html は build.mjs で生成)
 └── archive/avail-node/  以前このリポジトリにあったファイル一式 (アーカイブ)
 ```
