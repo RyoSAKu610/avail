@@ -5,7 +5,7 @@
 //   npm install
 //   npm run build                         site/index.html と README.md を更新
 //   node build.mjs --fragment out.html    <head> などを除いた断片も出力 (Artifact 公開用)
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import hljs from "highlight.js/lib/core";
@@ -14,6 +14,7 @@ import cpp from "highlight.js/lib/languages/cpp";
 import go from "highlight.js/lib/languages/go";
 import javascript from "highlight.js/lib/languages/javascript";
 import plaintext from "highlight.js/lib/languages/plaintext";
+import typescript from "highlight.js/lib/languages/typescript";
 import { Marked } from "marked";
 
 const SITE = dirname(fileURLToPath(import.meta.url));
@@ -24,6 +25,9 @@ hljs.registerLanguage("cpp", cpp);
 hljs.registerLanguage("go", go);
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("plaintext", plaintext);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerAliases(["ts"], { languageName: "typescript" });
+hljs.registerAliases(["csv"], { languageName: "plaintext" });
 hljs.registerAliases(["js"], { languageName: "javascript" });
 hljs.registerAliases(["text", "txt"], { languageName: "plaintext" });
 
@@ -63,9 +67,10 @@ const wrapTables = (html) => html.replace(/<table>/g, '<div class="table-wrap"><
 function lessonFiles(lesson) {
   const { day, lang, dir } = lesson;
   const rel = `lessons/${dir}`;
-  const source = (kind) => (lang === "go" ? `${kind}/main.go` : `${kind}.${lang}`);
+  const ext = lang === "js" && existsSync(join(ROOT, rel, "sample.ts")) ? "ts" : lang;
+  const source = (kind) => (lang === "go" ? `${kind}/main.go` : `${kind}.${ext}`);
   const run = (kind) => {
-    if (lang === "js") return `node ${rel}/${kind}.js`;
+    if (lang === "js") return `node ${rel}/${kind}.${ext}`;
     if (lang === "go") return `go run ./${rel}/${kind}`;
     return `g++ -std=c++17 -Wall -Wextra ${rel}/${kind}.cpp -o ${kind}.out && ./${kind}.out`;
   };
@@ -75,9 +80,16 @@ function lessonFiles(lesson) {
     { id: "expected", label: "期待する出力", path: "expected.txt", run: `node check.mjs ${day}` },
     { id: "solution", label: "解答例", path: source("solution"), run: run("solution") },
   ];
+  // sample / exercise / solution 以外に置いたファイル (モジュールや CSV など) も表示する
+  const standard = new Set(["README.md", "expected.txt", ...files.map((f) => f.path.split("/")[0])]);
+  for (const name of readdirSync(join(ROOT, rel)).sort()) {
+    if (standard.has(name) || statSync(join(ROOT, rel, name)).isDirectory()) continue;
+    files.push({ id: `extra-${name}`, label: "補助ファイル", path: name, run: "" });
+  }
   return files.map((f) => {
     const raw = readFileSync(join(ROOT, rel, f.path), "utf8");
-    const hlLang = f.id === "expected" ? "plaintext" : lang;
+    const fileLang = f.path.split(".").pop();
+    const hlLang = f.id === "expected" ? "plaintext" : f.id.startsWith("extra-") ? fileLang : ext;
     return { ...f, raw, html: highlight(raw, hlLang) };
   });
 }

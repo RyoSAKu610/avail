@@ -10,15 +10,17 @@
 //   node check.mjs --all --solution   全日の解答例が expected.txt と一致するか
 //   node check.mjs --all --smoke      全日の演習がエラーなく実行できるか
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const LANG_NAMES = { js: "JavaScript", go: "Go", cpp: "C++" };
+// JavaScript の日は .js、TypeScript を扱う日は .ts のファイルを使う
+const jsFile = (dir, target) => (existsSync(join(dir, `${target}.ts`)) ? `${target}.ts` : `${target}.js`);
 const SOURCE_PATHS = {
-  js: (target) => `${target}.js`,
+  js: (target, dir) => jsFile(dir, target),
   go: (target) => `${target}/main.go`,
   cpp: (target) => `${target}.cpp`,
 };
@@ -51,7 +53,7 @@ function exec(cmd, args, cwd) {
 
 // target は "exercise" か "solution"
 function runLesson({ lang, dir }, target) {
-  if (lang === "js") return exec("node", [`${target}.js`], dir);
+  if (lang === "js") return exec("node", [jsFile(dir, target)], dir);
   if (lang === "go") return exec("go", ["run", `./${target}`], dir);
 
   // C++: 一時フォルダにコンパイルしてから実行する
@@ -80,7 +82,7 @@ function compare(lesson, result) {
 
 function checkOne(lesson, target) {
   const label = `Day ${lesson.day} (${LANG_NAMES[lesson.lang]})`;
-  const file = relative(ROOT, join(lesson.dir, SOURCE_PATHS[lesson.lang](target)));
+  const file = relative(ROOT, join(lesson.dir, SOURCE_PATHS[lesson.lang](target, lesson.dir)));
   console.log(bold(`${label} ${target === "solution" ? "解答例" : "演習"}: ${file}`));
 
   const result = runLesson(lesson, target);
@@ -95,7 +97,7 @@ function checkOne(lesson, target) {
   if (diffs.length === 0) {
     console.log(green(`✓ 正解です! (${expected.length}行すべて一致)`));
     if (target === "exercise") {
-      const solution = relative(ROOT, join(lesson.dir, SOURCE_PATHS[lesson.lang]("solution")));
+      const solution = relative(ROOT, join(lesson.dir, SOURCE_PATHS[lesson.lang]("solution", lesson.dir)));
       console.log(dim(`  解答例と書き方を見比べてみましょう: ${solution}`));
     }
     return true;

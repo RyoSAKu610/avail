@@ -499,6 +499,7 @@ node check.mjs 1                                # Day 1 の演習を答え合わ
     const file = current.files.find((f) => f.id === id) || current.files[0];
     document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.id === file.id)));
     $("run-cmd").textContent = file.run;
+    $("run-cmd").parentElement.hidden = !file.run;
     const view = $("codeview");
     if (file.id === "solution" && !revealed.has(current.day)) {
       view.innerHTML = `<div class="gate"><p>まずは自分で演習を解いてみましょう。</p><p>答え合わせ: <code>node check.mjs ${current.day}</code></p><button class="btn" type="button" id="reveal">解答例を表示する</button></div>`;

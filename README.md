@@ -39,8 +39,8 @@ node check.mjs 1      # Day 1 の演習を答え合わせ
 | ラウンド | テーマ | JavaScript | Go | C++ |
 | --- | --- | --- | --- | --- |
 | 1 | 動かす・変数・型 | **[Day 1](lessons/day01-js/README.md)** node で実行、const と let、number 型、=== | **[Day 2](lessons/day02-go/README.md)** go run、:= と var、ゼロ値、型変換 | **[Day 3](lessons/day03-cpp/README.md)** g++ でコンパイル、const と auto、整数の割り算 |
-| 2 | 関数 | Day 4 関数宣言とアロー関数、デフォルト引数 | Day 5 複数の戻り値、可変長引数 | Day 6 値渡しと参照渡し、const 参照 |
-| 3 | 条件分岐とループ | Day 7 if・for...of・switch、truthy と falsy | Day 8 ループは for だけ、switch、if の初期化文 | Day 9 for・範囲 for・while、switch |
+| 2 | 関数 | **[Day 4](lessons/day04-js/README.md)** 関数宣言とアロー関数、デフォルト引数 | **[Day 5](lessons/day05-go/README.md)** 複数の戻り値、可変長引数 | **[Day 6](lessons/day06-cpp/README.md)** 値渡しと参照渡し、const 参照 |
+| 3 | 条件分岐とループ | **[Day 7](lessons/day07-js/README.md)** if・for...of・switch、truthy と falsy | **[Day 8](lessons/day08-go/README.md)** ループは for だけ、switch、if の初期化文 | **[Day 9](lessons/day09-cpp/README.md)** for・範囲 for・while、switch |
 | 4 | 配列とリスト | Day 10 配列と map・filter・reduce | Day 11 スライスと append、range | Day 12 std::vector と &lt;algorithm&gt; |
 | 5 | 辞書と文字列（日本語の扱い） | Day 13 オブジェクトと Map、分割代入、文字列と日本語 | Day 14 map、strings パッケージ、rune と日本語 | Day 15 std::map と std::string、UTF-8 の注意点 |
 | 6 | 型を作る | Day 16 class、スプレッド構文 | Day 17 struct とメソッド、ポインタレシーバ | Day 18 class、コンストラクタ、public と private |
