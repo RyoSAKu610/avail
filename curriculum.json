@@ -1,0 +1,92 @@
+{
+  "title": "15分ドリル JS・Go・C++",
+  "minutesPerDay": 15,
+  "phases": [
+    { "name": "比較", "minutes": 3, "detail": "Python・Rust との違いを表で確認" },
+    { "name": "サンプル", "minutes": 5, "detail": "サンプルを実行して読む" },
+    { "name": "演習", "minutes": 5, "detail": "演習を解いて答え合わせ" },
+    { "name": "クイズ", "minutes": 2, "detail": "確認クイズで振り返り" }
+  ],
+  "rounds": [
+    {
+      "theme": "動かす・変数・型",
+      "days": [
+        { "day": 1, "lang": "js", "topic": "node で実行、const と let、number 型、===" },
+        { "day": 2, "lang": "go", "topic": "go run、:= と var、ゼロ値、型変換" },
+        { "day": 3, "lang": "cpp", "topic": "g++ でコンパイル、const と auto、整数の割り算" }
+      ]
+    },
+    {
+      "theme": "関数",
+      "days": [
+        { "day": 4, "lang": "js", "topic": "関数宣言とアロー関数、デフォルト引数" },
+        { "day": 5, "lang": "go", "topic": "複数の戻り値、可変長引数" },
+        { "day": 6, "lang": "cpp", "topic": "値渡しと参照渡し、const 参照" }
+      ]
+    },
+    {
+      "theme": "条件分岐とループ",
+      "days": [
+        { "day": 7, "lang": "js", "topic": "if・for...of・switch、truthy と falsy" },
+        { "day": 8, "lang": "go", "topic": "ループは for だけ、switch、if の初期化文" },
+        { "day": 9, "lang": "cpp", "topic": "for・範囲 for・while、switch" }
+      ]
+    },
+    {
+      "theme": "配列とリスト",
+      "days": [
+        { "day": 10, "lang": "js", "topic": "配列と map・filter・reduce" },
+        { "day": 11, "lang": "go", "topic": "スライスと append、range" },
+        { "day": 12, "lang": "cpp", "topic": "std::vector と <algorithm>" }
+      ]
+    },
+    {
+      "theme": "辞書と文字列（日本語の扱い）",
+      "days": [
+        { "day": 13, "lang": "js", "topic": "オブジェクトと Map、分割代入、文字列と日本語" },
+        { "day": 14, "lang": "go", "topic": "map、strings パッケージ、rune と日本語" },
+        { "day": 15, "lang": "cpp", "topic": "std::map と std::string、UTF-8 の注意点" }
+      ]
+    },
+    {
+      "theme": "型を作る",
+      "days": [
+        { "day": 16, "lang": "js", "topic": "class、スプレッド構文" },
+        { "day": 17, "lang": "go", "topic": "struct とメソッド、ポインタレシーバ" },
+        { "day": 18, "lang": "cpp", "topic": "class、コンストラクタ、public と private" }
+      ]
+    },
+    {
+      "theme": "エラー処理",
+      "days": [
+        { "day": 19, "lang": "js", "topic": "try・catch・throw と Error" },
+        { "day": 20, "lang": "go", "topic": "error 値と if err != nil、errors.Is" },
+        { "day": 21, "lang": "cpp", "topic": "例外と std::optional" }
+      ]
+    },
+    {
+      "theme": "その言語らしさ ①",
+      "days": [
+        { "day": 22, "lang": "js", "topic": "Promise と async / await、fetch" },
+        { "day": 23, "lang": "go", "topic": "goroutine と channel" },
+        { "day": 24, "lang": "cpp", "topic": "ポインタと参照、スタックとヒープ" }
+      ]
+    },
+    {
+      "theme": "その言語らしさ ②",
+      "days": [
+        { "day": 25, "lang": "js", "topic": "import / export と TypeScript 入門" },
+        { "day": 26, "lang": "go", "topic": "interface と go test" },
+        { "day": 27, "lang": "cpp", "topic": "RAII とスマートポインタ" }
+      ]
+    },
+    {
+      "theme": "ミニプロジェクト",
+      "days": [
+        { "day": 28, "lang": "js", "topic": "ToDo 管理 CLI（JSON ファイルに保存）" },
+        { "day": 29, "lang": "go", "topic": "JSON を返す API サーバー（net/http）" },
+        { "day": 30, "lang": "cpp", "topic": "CSV の成績集計ツール（ファイル入出力）" }
+      ]
+    }
+  ]
+}

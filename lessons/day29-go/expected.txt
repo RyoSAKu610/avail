@@ -1,0 +1,7 @@
+GET /items → 200
+[{"id":1,"name":"コーヒー","price":500},{"id":2,"name":"ケーキ","price":650}]
+Content-Type: application/json
+GET /items/2 → 200
+{"id":2,"name":"ケーキ","price":650}
+GET /items/9 → 404
+{"error":"商品 9 は見つかりません"}

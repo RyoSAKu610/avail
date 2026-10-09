@@ -1,0 +1,13 @@
+{
+  "name": "drill15-site",
+  "private": true,
+  "type": "module",
+  "description": "lessons/ の Markdown とコードから site/index.html を生成する",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "highlight.js": "11.12.0",
+    "marked": "18.0.14"
+  }
+}

@@ -1,0 +1,8 @@
+target
+.gdb_history
+.DS_Store
+node_modules
+dist
+tests/rust_scripts/target
+.vscode
+output
